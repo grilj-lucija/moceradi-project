@@ -2,6 +2,7 @@
 import React, { useState, useEffect} from 'react';
 import {supabase} from './supabaseClient';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
+import MapView from './MapView';
 
 function App(){
   const [ingredients, setIngredients] = useState([]);
@@ -12,7 +13,7 @@ function App(){
   }, []);
 
   async function fetchIngredients() {
-    const  {data, error} = await supabase.from('ingredient').select('*').limit(100);
+    const  {data, error} = await supabase.from('ingredient').select('*').limit(10);
 
     if(error) console.log(error);
     else setIngredients(data);
@@ -54,6 +55,7 @@ function App(){
           ))}
         </tbody>
       </table>
+      <MapView />
     </div>
   );
 }
