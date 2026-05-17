@@ -1,4 +1,5 @@
 import express, { type Application } from "express";
+import "dotenv/config"
 import testRoute from "./routes/testRoutes";
 import foodsRoutes from "./routes/foodsRoutes";
 import locationsRoutes from "./routes/locationsRoutes";
