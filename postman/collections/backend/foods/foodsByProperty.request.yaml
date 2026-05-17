@@ -1,0 +1,10 @@
+$kind: http-request
+name: foodsByProperty
+url: localhost:3000/foods?page=1&pageSize=20
+method: GET
+queryParams:
+  - key: page
+    value: "1"
+  - key: pageSize
+    value: "20"
+order: 2314965533228015

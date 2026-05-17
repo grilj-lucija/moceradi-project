@@ -1,0 +1,5 @@
+$kind: http-request
+name: foodsById
+url: localhost:3000/foods/13
+method: GET
+order: 3148146411451249

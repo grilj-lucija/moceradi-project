@@ -1,0 +1,12 @@
+$kind: http-request
+name: foods
+url: localhost:3000/foods
+method: POST
+body:
+  type: json
+  content: |-
+    {
+        "name": "Smoki uh moky",
+        "calorie_count": 10000000
+    }
+order: 3954525553730188
