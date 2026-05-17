@@ -1,0 +1,8 @@
+$kind: http-request
+name: Test
+url: localhost:3000
+method: POST
+body:
+  type: json
+  content: '{ "what": "ever" }'
+order: 720263063248853

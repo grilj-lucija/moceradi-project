@@ -1,0 +1,68 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.3.0 Chrome/140.0.7339.249 Electron/38.7.2 Safari/537.36" version="29.3.0">
+  <diagram name="Page-1" id="erKc2ROhnlyCqKg4Opq2">
+    <mxGraphModel dx="946" dy="618" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="eVUaOcQnw__Z_BtLPYqi-6" edge="1" parent="1" source="eVUaOcQnw__Z_BtLPYqi-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;startArrow=none;startFill=0;endArrow=none;endFill=0;" target="eVUaOcQnw__Z_BtLPYqi-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eVUaOcQnw__Z_BtLPYqi-8" connectable="0" parent="eVUaOcQnw__Z_BtLPYqi-6" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="MQTT" vertex="1">
+          <mxGeometry relative="1" x="0.0142" y="2" as="geometry">
+            <mxPoint y="-2" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="eVUaOcQnw__Z_BtLPYqi-1" parent="1" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;align=center;strokeColor=none;fillColor=#00BEF2;shape=mxgraph.azure.mobile;pointerEvents=1;" value="Mobilna naprava" vertex="1">
+          <mxGeometry height="50" width="35" x="470" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="eVUaOcQnw__Z_BtLPYqi-4" edge="1" parent="1" source="eVUaOcQnw__Z_BtLPYqi-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=none;startFill=0;endArrow=none;endFill=0;" target="eVUaOcQnw__Z_BtLPYqi-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eVUaOcQnw__Z_BtLPYqi-7" connectable="0" parent="eVUaOcQnw__Z_BtLPYqi-4" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="REST" vertex="1">
+          <mxGeometry relative="1" x="-0.0303" y="2" as="geometry">
+            <mxPoint y="1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="eVUaOcQnw__Z_BtLPYqi-2" parent="1" style="image;aspect=fixed;perimeter=ellipsePerimeter;html=1;align=center;shadow=0;dashed=0;spacingTop=3;image=img/lib/active_directory/database_server.svg;" value="Podatkovna baza" vertex="1">
+          <mxGeometry height="50" width="41" x="70" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="eVUaOcQnw__Z_BtLPYqi-28" edge="1" parent="1" source="eVUaOcQnw__Z_BtLPYqi-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;endArrow=none;endFill=0;" target="eVUaOcQnw__Z_BtLPYqi-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eVUaOcQnw__Z_BtLPYqi-29" connectable="0" parent="eVUaOcQnw__Z_BtLPYqi-28" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="MQTT" vertex="1">
+          <mxGeometry relative="1" x="0.0196" y="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="eVUaOcQnw__Z_BtLPYqi-30" edge="1" parent="1" source="eVUaOcQnw__Z_BtLPYqi-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;endArrow=none;endFill=0;" target="eVUaOcQnw__Z_BtLPYqi-21">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eVUaOcQnw__Z_BtLPYqi-31" connectable="0" parent="eVUaOcQnw__Z_BtLPYqi-30" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="REST" vertex="1">
+          <mxGeometry relative="1" x="0.225" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="eVUaOcQnw__Z_BtLPYqi-3" parent="1" style="image;aspect=fixed;perimeter=ellipsePerimeter;html=1;align=center;shadow=0;dashed=0;spacingTop=3;image=img/lib/active_directory/generic_server.svg;" value="PB API vmesnik" vertex="1">
+          <mxGeometry height="50" width="28.000000000000004" x="210" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="eVUaOcQnw__Z_BtLPYqi-5" parent="1" style="image;aspect=fixed;perimeter=ellipsePerimeter;html=1;align=center;shadow=0;dashed=0;spacingTop=3;image=img/lib/active_directory/generic_server.svg;" value="MQTT broker&lt;div&gt;Mosquito&lt;/div&gt;" vertex="1">
+          <mxGeometry height="50" width="28.000000000000004" x="340" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="eVUaOcQnw__Z_BtLPYqi-19" edge="1" parent="1" source="eVUaOcQnw__Z_BtLPYqi-18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=none;startFill=0;endArrow=none;endFill=0;" target="eVUaOcQnw__Z_BtLPYqi-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eVUaOcQnw__Z_BtLPYqi-20" connectable="0" parent="eVUaOcQnw__Z_BtLPYqi-19" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="MQTT" vertex="1">
+          <mxGeometry relative="1" y="1" as="geometry">
+            <mxPoint x="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="eVUaOcQnw__Z_BtLPYqi-18" parent="1" style="image;aspect=fixed;perimeter=ellipsePerimeter;html=1;align=center;shadow=0;dashed=0;spacingTop=3;image=img/lib/active_directory/generic_server.svg;" value="Prepoznava hrane iz slik" vertex="1">
+          <mxGeometry height="50" width="28.000000000000004" x="340" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="eVUaOcQnw__Z_BtLPYqi-21" parent="1" style="image;aspect=fixed;perimeter=ellipsePerimeter;html=1;align=center;shadow=0;dashed=0;spacingTop=3;image=img/lib/active_directory/generic_server.svg;" value="Web app" vertex="1">
+          <mxGeometry height="50" width="28.000000000000004" x="210" y="290" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
