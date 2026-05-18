@@ -1,0 +1,146 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:health_app/app/home_shell.dart';
+import 'package:health_app/features/auth/presentation/pages/login_page.dart';
+import 'package:health_app/features/auth/presentation/pages/register_page.dart';
+import 'package:health_app/features/auth/presentation/providers/auth_controller.dart';
+import 'package:health_app/features/auth/presentation/providers/profile_provider.dart';
+import 'package:health_app/features/dashboard/presentation/pages/dashboard_page.dart';
+import 'package:health_app/features/onboarding/presentation/pages/onboarding_page.dart';
+import 'package:health_app/features/profile/presentation/pages/profile_page.dart';
+import 'package:health_app/features/workout/presentation/pages/active_workout_page.dart';
+import 'package:health_app/features/workout/presentation/pages/select_activity_page.dart';
+import 'package:health_app/features/workout/presentation/pages/workout_summary_page.dart';
+import 'package:health_app/features/workout/presentation/providers/workout_controller.dart';
+
+class AppRoutes {
+  const AppRoutes._();
+  static const login = '/login';
+  static const register = '/register';
+  static const onboarding = '/onboarding';
+  static const dashboard = '/';
+  static const activities = '/activities';
+  static const profile = '/profile';
+  static const workoutActive = '/workout/active';
+  static const workoutSummary = '/workout/summary';
+
+  static const Set<String> _publicPaths = {login, register};
+  static bool isPublic(String path) => _publicPaths.contains(path);
+  static const Set<String> _workoutPaths = {workoutActive, workoutSummary};
+  static bool isWorkout(String path) => _workoutPaths.contains(path);
+}
+
+final routerProvider = Provider<GoRouter>((ref) {
+  final navKey = GlobalKey<NavigatorState>();
+  final shellKey = GlobalKey<NavigatorState>();
+
+  return GoRouter(
+    navigatorKey: navKey,
+    initialLocation: AppRoutes.dashboard,
+    refreshListenable: _AuthChangeNotifier(ref),
+    redirect: (context, state) {
+      final user = ref.read(authStateProvider).value;
+      final profileAsync = ref.read(currentProfileProvider);
+      final loc = state.matchedLocation;
+      final isPublic = AppRoutes.isPublic(loc);
+
+      if (user == null) {
+        return isPublic ? null : AppRoutes.login;
+      }
+
+      if (isPublic) return AppRoutes.dashboard;
+
+      if (profileAsync.isLoading) return null;
+
+      final profile = profileAsync.value;
+      final needsOnboarding = profile == null || !profile.isOnboarded;
+
+      if (needsOnboarding && loc != AppRoutes.onboarding) {
+        return AppRoutes.onboarding;
+      }
+      if (!needsOnboarding && loc == AppRoutes.onboarding) {
+        return AppRoutes.dashboard;
+      }
+
+      if (AppRoutes.isWorkout(loc) &&
+          ref.read(workoutControllerProvider) == null) {
+        return AppRoutes.dashboard;
+      }
+
+      return null;
+    },
+    routes: [
+      GoRoute(
+        path: AppRoutes.login,
+        builder: (context, state) => const LoginPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.register,
+        builder: (context, state) => const RegisterPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.onboarding,
+        builder: (context, state) => const OnboardingPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.workoutActive,
+        parentNavigatorKey: navKey,
+        builder: (context, state) => const ActiveWorkoutPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.workoutSummary,
+        parentNavigatorKey: navKey,
+        builder: (context, state) => const WorkoutSummaryPage(),
+      ),
+      StatefulShellRoute.indexedStack(
+        parentNavigatorKey: navKey,
+        builder: (context, state, navShell) => HomeShell(
+          currentIndex: navShell.currentIndex,
+          onTap: (i) => navShell.goBranch(i, initialLocation: i == navShell.currentIndex),
+          child: navShell,
+        ),
+        branches: [
+          StatefulShellBranch(
+            navigatorKey: shellKey,
+            routes: [
+              GoRoute(
+                path: AppRoutes.dashboard,
+                builder: (context, state) => const DashboardPage(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.activities,
+                builder: (context, state) => const SelectActivityPage(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.profile,
+                builder: (context, state) => const ProfilePage(),
+              ),
+            ],
+          ),
+        ],
+      ),
+    ],
+  );
+});
+
+class _AuthChangeNotifier extends ChangeNotifier {
+  _AuthChangeNotifier(this._ref) {
+    _ref
+      ..listen(authStateProvider, (previous, next) => notifyListeners())
+      ..listen(currentProfileProvider, (previous, next) => notifyListeners())
+      ..listen(
+        workoutControllerProvider,
+        (previous, next) => notifyListeners(),
+      );
+  }
+  final Ref _ref;
+}
