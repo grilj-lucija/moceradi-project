@@ -1,0 +1,59 @@
+---
+description: Endurance Performance System — visual rules for all UI work
+globs: mobile/lib/**/*.dart,react-app/src/**/*.{ts,tsx,js,jsx,css}
+alwaysApply: false
+---
+
+# Design System
+
+Authoritative spec: `/DESIGN.md` (Endurance Performance System — dark navy, glassmorphism, 8px grid, Plus Jakarta Sans). Read it before any visual change.
+
+## Hard rules
+
+- **Never hardcode visual values.** No raw `Color(0xFF…)`, raw `TextStyle(fontFamily: …)`, or pixel values inline. Use design tokens.
+- **Token names map 1:1 to DESIGN.md.** If you need a value that isn't tokenized, add it to the appropriate theme file first.
+- **Flutter mobile tokens:** access via `BuildContext` extensions from `lib/app/theme/app_theme.dart`:
+  - `context.colors` → `AppColors`
+  - `context.typography` → `AppTypography`
+  - `context.spacing` → `AppSpacing`
+  - `context.radius` → `AppRadius`
+- **Build UI from `mobile/lib/shared/widgets/`** before reaching for raw `Container` / `Text`. If a widget is missing, extract instead of duplicating inline.
+
+## Token usage examples
+
+```dart
+// ❌ BAD
+Container(
+  color: const Color(0xFF1C2026),
+  padding: const EdgeInsets.all(16),
+  child: Text('Hi', style: TextStyle(fontSize: 20, color: Colors.white)),
+)
+
+// ✅ GOOD
+Container(
+  color: context.colors.surfaceContainer,
+  padding: EdgeInsets.all(context.spacing.stackMd),
+  child: Text('Hi', style: context.typography.titleMd),
+)
+```
+
+## Component preferences
+
+- Primary CTA → `PrimaryButton` (gradient pill).
+- Secondary CTA → `GhostButton` (cyan outline).
+- Data display → `MetricTile`.
+- Live/overlay surfaces → `GlassCard`.
+- Bottom nav → `GlassBottomNav`.
+- Page wrapper → `AppScaffold`.
+
+## Brand color highlights
+
+- Background: `colors.background` (Deep Navy `#10141A`).
+- Accent primary: `colors.velocityBlue` (`#007AFF`).
+- Accent secondary: `colors.enduranceCyan` (`#00E5FF`).
+- Primary gradient (active states): `colors.primaryGradient`.
+- Ghost border (subtle dividers/outlines on glass): `colors.ghostBorder` (white at 10%).
+
+## Touch targets
+
+Mobile minimum 48px (`context.spacing.touchTargetMin`). Endurance-focused — generous targets, no tiny tap zones.

@@ -1,0 +1,129 @@
+---
+description: Flutter mobile app architecture rules (Riverpod + swappable data layer)
+globs: mobile/**/*.dart,mobile/pubspec.yaml,mobile/analysis_options.yaml
+alwaysApply: false
+---
+
+# Mobile Architecture
+
+Flutter app for **Health App**. Read this before editing `mobile/`.
+
+## Stack
+
+Flutter 3.x · Dart 3.x · **Riverpod 3** (no codegen) · **go_router** · **supabase_flutter** · **google_fonts** (Plus Jakarta Sans) · **flutter_dotenv** · **equatable** · **very_good_analysis** · **mocktail**.
+
+We deliberately **do not** use code generators (`freezed`, `json_serializable`, `riverpod_annotation`) — keeps models manual, avoids `build_runner` step.
+
+## Layered structure
+
+```
+lib/
+├── app/              MaterialApp, router, theme tokens
+├── core/             Result<T>, Failure, env, utils
+├── data/
+│   ├── models/       Plain classes + Equatable + fromJson/toJson
+│   ├── sources/      Abstract interface + impls (mock + supabase + future api)
+│   └── repositories/ Bridge UI <-> sources, return Result<T>
+├── domain/
+│   └── repositories/ ABSTRACT interfaces (UI depends on these)
+├── features/<name>/presentation/{pages,widgets,providers}
+├── shared/widgets/   Reusable design-system widgets
+└── di/providers.dart Single place to wire repos/sources
+```
+
+## Hard rules
+
+- **Data layer is swappable.** Every domain has `abstract XxxSource` + `MockXxxSource` + `SupabaseXxxSource` (or future `ApiXxxSource`). Choice happens **only in `lib/di/providers.dart`** based on `Env.useMockData` and `Env.isSupabaseConfigured`. UI never branches on source.
+- **Sources throw, repositories wrap.** Sources may throw raw exceptions. Repositories catch with `on Object catch (e)` and return `Result<T>` (`Ok` / `Err(Failure)`). UI never sees raw exceptions.
+- **Never instantiate a repo/source in a widget.** Always go through `ref.watch(...Provider)`.
+- **Use Riverpod 3 without codegen.** `Provider`, `FutureProvider`, `StreamProvider`, `AsyncNotifier`/`Notifier` + `AsyncNotifierProvider`/`NotifierProvider`. No `riverpod_annotation`.
+- **No `freezed` / `json_serializable`.** Models are manual + `Equatable` + `fromJson` / `toJson`.
+
+## Adding a new domain — 7 steps
+
+To add (e.g.) `meals`:
+
+1. `data/models/meal.dart` — Equatable + fromJson/toJson.
+2. `domain/repositories/meals_repository.dart` — abstract, returns `Result<T>`.
+3. `data/sources/meals/meals_source.dart` — abstract.
+4. `data/sources/meals/mock_meals_source.dart` — hardcoded data.
+5. `data/sources/meals/supabase_meals_source.dart` — real impl (can stub initially).
+6. `data/repositories/meals_repository_impl.dart` — wraps a source, maps exceptions → `Failure`.
+7. Register all three (source, repository) in `lib/di/providers.dart`.
+
+## Routing
+
+- Single `routerProvider` in `lib/app/router.dart`.
+- Use `AppRoutes.xxx` constants — never hardcode path strings.
+- Auth-aware redirect already wired via `authStateProvider`.
+- Bottom-tab nav uses `StatefulShellRoute.indexedStack` so each tab keeps its own navigator stack.
+
+## Auth
+
+- All flows go through `AuthController` in `features/auth/.../providers/auth_controller.dart`.
+- Watch session via `authStateProvider` (StreamProvider over `AppUser?`).
+- Mock credentials: `demo@health.app` / `demo1234`.
+
+## Environment
+
+Defined in `lib/core/config/env.dart`. Required keys (see `.env.example`):
+
+```
+USE_MOCK_DATA=true|false
+SUPABASE_URL=
+SUPABASE_ANON_KEY=
+OCR_BASE_URL=
+```
+
+`USE_MOCK_DATA=true` (default) forces mocks regardless of Supabase config.
+
+## State management
+
+- For derived state: `Provider`, `FutureProvider`, `StreamProvider`.
+- For mutable UI state: `AsyncNotifier` / `Notifier` with their `*Provider` variants.
+- Feature providers live next to the feature: `features/<name>/presentation/providers/*.dart`.
+- Repository providers live in `lib/di/providers.dart`.
+
+## Error handling
+
+- Sources throw; repositories return `Result<T>`.
+- UI handles via `result.fold(ok: ..., err: ...)` or `AsyncValue.when(...)`.
+- Show `Failure.message` to the user (plan for i18n later).
+
+## Naming conventions
+
+- Files: `snake_case.dart`.
+- Classes: `PascalCase`.
+- Providers: `camelCaseProvider` (e.g., `authRepositoryProvider`).
+- Route paths: constants on `AppRoutes` — never inline strings.
+
+## Tests
+
+- Widget tests for pages must use `ProviderScope`; override sources with mocks via `mocktail`.
+- Run `flutter analyze && flutter test` before opening a PR.
+
+## Common commands
+
+```bash
+cd mobile
+flutter pub get
+flutter analyze
+flutter test
+flutter run                     # default device
+flutter run -d "iPhone 15"      # iOS simulator
+flutter run -d emulator-5554    # Android emulator
+flutter devices
+```
+
+## Recipes
+
+**Add a screen:**
+1. `features/<name>/presentation/pages/<name>_page.dart` (ConsumerWidget or ConsumerStatefulWidget).
+2. Register route in `lib/app/router.dart`.
+3. Build UI from `shared/widgets/*` + theme tokens only.
+4. Data via `ref.watch(...Provider)`.
+
+**Switch from mock to real Supabase:**
+1. Set Supabase keys in `.env`.
+2. Set `USE_MOCK_DATA=false`.
+3. Restart the app. `di/providers.dart` automatically picks `SupabaseXxxSource`. No UI change.

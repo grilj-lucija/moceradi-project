@@ -1,0 +1,47 @@
+---
+description: Monorepo overview and cross-cutting conventions for Health App
+alwaysApply: true
+---
+
+# Health App Monorepo
+
+University Health App project (FERI). React web + Flutter mobile + Supabase backend + OCR service + scraper.
+
+## Layout
+
+```
+react-app/   # React web app (Vite + React Router + OpenStreetMap)
+mobile/      # Flutter app for iOS + Android
+supabase/    # Supabase project config, migrations, edge functions
+scraper/     # Node.js data scraper
+ocr/         # (planned) OCR service
+DESIGN.md    # Endurance Performance System — visual source of truth
+```
+
+Each subproject is self-contained with its own dependencies and `.gitignore`. **Do NOT** introduce `npm/pnpm workspaces`, Turborepo, or Nx unless explicitly asked.
+
+## Tech stack
+
+| Area    | Stack                                                              |
+| ------- | ------------------------------------------------------------------ |
+| Web     | React, Vite, OpenStreetMap                                         |
+| Mobile  | Flutter 3.x, Dart 3.x, Riverpod 3, go_router, Supabase Flutter SDK |
+| Backend | Supabase (Postgres + Auth + Edge Functions)                        |
+| OCR     | Standalone HTTP service (to be implemented in `/ocr`)              |
+| Scraper | Node.js                                                            |
+
+## Cross-cutting rules
+
+1. **Never commit secrets.** All `.env` files are gitignored. Use `.env.example` to document required keys.
+2. **DESIGN.md is authoritative.** All UI work must respect it. Token names map 1:1 to code constants — never hardcode hex colors or pixel values. See `design-system.mdc`.
+3. **No comments unless explicitly asked.** No narrating comments. Code self-documents via naming.
+4. **Mock-first development.** Mobile (and web) must work end-to-end against mock sources before any real backend wiring. Source swaps are one-line DI changes.
+5. **Pick latest stable versions** when adding deps. Use `flutter pub add` / `npm install` — don't hand-write version constraints.
+
+## Checklist before changing code
+
+1. Identify the subproject (`react-app/`, `mobile/`, `supabase/`, `scraper/`).
+2. Read matching rules: `mobile-architecture.mdc` for `mobile/**`, `design-system.mdc` for any UI work.
+3. Verify design-system token usage if the change is visual.
+4. Run the subproject's analyzer/tests before declaring done (e.g., `flutter analyze && flutter test`).
+5. Keep PRs scoped to a single concern.
