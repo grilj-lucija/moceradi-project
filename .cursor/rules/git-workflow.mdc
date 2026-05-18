@@ -1,0 +1,40 @@
+---
+description: Git branching, commits, and PR conventions for the team
+alwaysApply: true
+---
+
+# Git Workflow
+
+## Branches
+
+- `main` — always stable, protected. Never push directly.
+- Long-lived dev branches per area: `mobile`, `backend`, `database`, `scraper`.
+- Short-lived feature branches: `feat/<area>-<desc>`, `fix/<area>-<desc>`, `chore/<area>-<desc>`, `docs/<area>-<desc>`.
+
+## Commits — Conventional Commits
+
+```
+<type>(<area>): <short imperative description>
+```
+
+Types: `feat`, `fix`, `chore`, `docs`, `refactor`, `style`, `test`.
+
+Examples:
+- `feat(mobile): add login screen`
+- `fix(mobile): handle null user in router redirect`
+- `chore(supabase): bump CLI to 1.207`
+- `docs(monorepo): document data-layer architecture`
+
+## Pull Requests
+
+- Open PR into the relevant long-lived branch, or directly into `main` for foundational work.
+- At least one reviewer from the team.
+- All checks must pass: `flutter analyze`, `flutter test`, and any CI.
+- Keep PRs scoped to a single concern; split if it grows beyond ~400 LOC of logic.
+
+## What NOT to do
+
+- Do **not** commit directly to `main`.
+- Do **not** commit `.env`, secrets, or generated build artifacts.
+- Do **not** force-push to shared branches.
+- Do **not** create commits unless explicitly asked by the user.
