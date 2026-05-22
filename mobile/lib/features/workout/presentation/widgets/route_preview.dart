@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -8,6 +9,20 @@ import 'package:health_app/data/models/activity.dart';
 import 'package:health_app/features/workout/services/polyline_codec.dart' as pl;
 import 'package:latlong2/latlong.dart';
 
+double _haversineMeters(LatLng a, LatLng b) {
+  const r = 6371000.0;
+  final dLat = (b.latitude - a.latitude) * math.pi / 180;
+  final dLng = (b.longitude - a.longitude) * math.pi / 180;
+  final sLat = math.sin(dLat / 2);
+  final sLng = math.sin(dLng / 2);
+  final h = sLat * sLat +
+      math.cos(a.latitude * math.pi / 180) *
+          math.cos(b.latitude * math.pi / 180) *
+          sLng *
+          sLng;
+  return 2 * r * math.asin(math.min(1, math.sqrt(h)));
+}
+
 class RoutePreview extends StatefulWidget {
   const RoutePreview({
     this.polyline,
@@ -16,7 +31,7 @@ class RoutePreview extends StatefulWidget {
     this.height = 140,
     this.interactive = false,
     this.animate = false,
-    this.animationDuration = const Duration(milliseconds: 1800),
+    this.animationDuration = const Duration(milliseconds: 1134),
     super.key,
   });
 
@@ -41,10 +56,13 @@ class _RoutePreviewState extends State<RoutePreview>
   );
   late final Animation<double> _progress = CurvedAnimation(
     parent: _animController,
-    curve: Curves.easeOutCubic,
+    curve: Curves.easeInCubic,
   );
   bool _didFit = false;
   bool _didStartAnim = false;
+  List<LatLng>? _animPoints;
+  List<double>? _animCumDist;
+  double _animTotalDist = 0;
 
   static const List<double> _darkenMatrix = [
     0.5, 0, 0, 0, 0,
@@ -58,15 +76,6 @@ class _RoutePreviewState extends State<RoutePreview>
     _animController.dispose();
     _controller.dispose();
     super.dispose();
-  }
-
-  @override
-  void didUpdateWidget(covariant RoutePreview oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.polyline != widget.polyline ||
-        oldWidget.points != widget.points) {
-      _didFit = false;
-    }
   }
 
   List<LatLng> get _points {
@@ -113,22 +122,53 @@ class _RoutePreviewState extends State<RoutePreview>
     });
   }
 
-  List<LatLng> _slice(List<LatLng> pts, double t) {
-    if (pts.length < 2) return pts;
-    if (t >= 1) return pts;
-    final fullCount = (pts.length * t).clamp(0, pts.length - 1);
-    final wholeCount = fullCount.floor();
-    if (wholeCount <= 1) return pts.sublist(0, 2);
-    final base = pts.sublist(0, wholeCount);
-    final frac = fullCount - wholeCount;
-    if (frac > 0 && wholeCount < pts.length) {
-      final a = pts[wholeCount - 1];
-      final b = pts[wholeCount];
-      final lat = a.latitude + (b.latitude - a.latitude) * frac;
-      final lng = a.longitude + (b.longitude - a.longitude) * frac;
-      return [...base, LatLng(lat, lng)];
+  void _prepareAnimPoints(List<LatLng> pts) {
+    if (_animPoints != null) return;
+    if (pts.length < 2) return;
+    final cum = <double>[0];
+    var total = 0.0;
+    for (var i = 1; i < pts.length; i++) {
+      total += _haversineMeters(pts[i - 1], pts[i]);
+      cum.add(total);
     }
-    return base;
+    _animPoints = pts;
+    _animCumDist = cum;
+    _animTotalDist = total;
+  }
+
+  List<LatLng> _sliceByDistance(double t) {
+    final pts = _animPoints;
+    final cum = _animCumDist;
+    if (pts == null || cum == null || pts.length < 2) return const [];
+    if (t <= 0) return pts.sublist(0, 1);
+    if (t >= 1 || _animTotalDist <= 0) return pts;
+    final target = t * _animTotalDist;
+    var lo = 0;
+    var hi = cum.length - 1;
+    while (lo < hi) {
+      final mid = (lo + hi + 1) >> 1;
+      if (cum[mid] <= target) {
+        lo = mid;
+      } else {
+        hi = mid - 1;
+      }
+    }
+    if (lo >= pts.length - 1) return pts;
+    final base = pts.sublist(0, lo + 1);
+    final segStart = cum[lo];
+    final segEnd = cum[lo + 1];
+    final segLen = segEnd - segStart;
+    if (segLen <= 0) return base;
+    final frac = ((target - segStart) / segLen).clamp(0.0, 1.0);
+    final a = pts[lo];
+    final b = pts[lo + 1];
+    return [
+      ...base,
+      LatLng(
+        a.latitude + (b.latitude - a.latitude) * frac,
+        a.longitude + (b.longitude - a.longitude) * frac,
+      ),
+    ];
   }
 
   @override
@@ -136,6 +176,7 @@ class _RoutePreviewState extends State<RoutePreview>
     final colors = context.colors;
     final token = Env.mapboxPublicToken;
     final pts = _points;
+    if (widget.animate) _prepareAnimPoints(pts);
     _fitOnce(pts);
     _maybeStartAnim(pts);
 
@@ -175,8 +216,12 @@ class _RoutePreviewState extends State<RoutePreview>
                 AnimatedBuilder(
                   animation: _progress,
                   builder: (context, _) {
-                    final t = widget.animate ? _progress.value : 1.0;
-                    final visible = _slice(pts, t);
+                    final List<LatLng> visible;
+                    if (widget.animate && _animPoints != null) {
+                      visible = _sliceByDistance(_progress.value);
+                    } else {
+                      visible = pts;
+                    }
                     return PolylineLayer(
                       polylines: [
                         Polyline(
