@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:health_app/app/router.dart';
+import 'package:health_app/app/theme/app_spacing.dart';
 import 'package:health_app/app/theme/app_theme.dart';
-import 'package:health_app/data/models/activity.dart';
 import 'package:health_app/features/dashboard/presentation/providers/dashboard_controller.dart';
+import 'package:health_app/features/dashboard/presentation/widgets/activity_card.dart';
 import 'package:health_app/shared/widgets/cards/glass_card.dart';
 import 'package:health_app/shared/widgets/cards/metric_tile.dart';
 import 'package:health_app/shared/widgets/layout/page_header.dart';
@@ -96,14 +99,22 @@ class DashboardPage extends ConsumerWidget {
           Text('Recent activities', style: typography.titleMd),
           SizedBox(height: spacing.stackMd),
           activities.when(
-            data: (items) => Column(
-              children: [
-                for (final activity in items) ...[
-                  _ActivityRow(activity: activity),
-                  SizedBox(height: spacing.stackSm),
-                ],
-              ],
-            ),
+            data: (items) => items.isEmpty
+                ? _EmptyState(spacing: spacing)
+                : Column(
+                    children: [
+                      for (final activity in items) ...[
+                        ActivityCard(
+                          activity: activity,
+                          onTap: () => context.push(
+                            AppRoutes.activityDetail,
+                            extra: activity,
+                          ),
+                        ),
+                        SizedBox(height: spacing.stackMd),
+                      ],
+                    ],
+                  ),
             loading: () => const Padding(
               padding: EdgeInsets.all(24),
               child: Center(child: CircularProgressIndicator()),
@@ -119,29 +130,17 @@ class DashboardPage extends ConsumerWidget {
   }
 }
 
-class _ActivityRow extends StatelessWidget {
-  const _ActivityRow({required this.activity});
-  final Activity activity;
-
-  IconData get _icon => switch (activity.type) {
-        ActivityType.run => Icons.directions_run,
-        ActivityType.ride => Icons.directions_bike,
-        ActivityType.walk => Icons.directions_walk,
-        ActivityType.swim => Icons.pool,
-        ActivityType.other => Icons.fitness_center,
-      };
+class _EmptyState extends StatelessWidget {
+  const _EmptyState({required this.spacing});
+  final AppSpacing spacing;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     final typography = context.typography;
     final radius = context.radius;
-    final spacing = context.spacing;
-
-    final minutes = (activity.durationSeconds / 60).round();
-
     return Container(
-      padding: EdgeInsets.all(spacing.stackMd),
+      padding: EdgeInsets.all(spacing.stackLg),
       decoration: BoxDecoration(
         color: colors.surfaceContainerLow,
         borderRadius: radius.lgRadius,
@@ -149,29 +148,13 @@ class _ActivityRow extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: colors.surfaceContainerHigh,
-              borderRadius: radius.baseRadius,
-            ),
-            child: Icon(_icon, color: colors.enduranceCyan, size: 22),
-          ),
+          Icon(Icons.directions_run, color: colors.onSurfaceVariant),
           SizedBox(width: spacing.stackMd),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(activity.title, style: typography.bodyLg),
-                  const SizedBox(height: 2),
-                Text(
-                  '${activity.distanceKm.toStringAsFixed(1)} km • ${minutes}m',
-                  style: typography.bodyMd.copyWith(
-                    color: colors.onSurfaceVariant,
-                  ),
-                ),
-              ],
+            child: Text(
+              'No activities yet.\nStart a workout to see it here.',
+              style: typography.bodyMd
+                  .copyWith(color: colors.onSurfaceVariant),
             ),
           ),
         ],

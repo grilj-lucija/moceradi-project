@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:health_app/app/home_shell.dart';
+import 'package:health_app/data/models/activity.dart';
 import 'package:health_app/data/models/food.dart';
 import 'package:health_app/features/auth/presentation/pages/login_page.dart';
 import 'package:health_app/features/auth/presentation/pages/register_page.dart';
 import 'package:health_app/features/auth/presentation/providers/auth_controller.dart';
 import 'package:health_app/features/auth/presentation/providers/profile_provider.dart';
+import 'package:health_app/features/dashboard/presentation/pages/activity_detail_page.dart';
 import 'package:health_app/features/dashboard/presentation/pages/dashboard_page.dart';
 import 'package:health_app/features/nutrition/presentation/pages/add_food_page.dart';
 import 'package:health_app/features/nutrition/presentation/pages/barcode_lookup_page.dart';
@@ -42,6 +44,7 @@ class AppRoutes {
   static const nutritionPhoto = '/nutrition/photo';
   static const nutritionRecipes = '/nutrition/recipes';
   static const nutritionRecipeNew = '/nutrition/recipes/new';
+  static const activityDetail = '/activity';
   static const profile = '/profile';
   static const workoutActive = '/workout/active';
   static const workoutSummary = '/workout/summary';
@@ -179,6 +182,19 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.nutritionRecipeNew,
         parentNavigatorKey: navKey,
         builder: (context, state) => const RecipeFormPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.activityDetail,
+        parentNavigatorKey: navKey,
+        builder: (context, state) {
+          final activity = state.extra as Activity?;
+          if (activity == null) {
+            return const Scaffold(
+              body: Center(child: Text('No activity provided')),
+            );
+          }
+          return ActivityDetailPage(activity: activity);
+        },
       ),
       StatefulShellRoute.indexedStack(
         parentNavigatorKey: navKey,

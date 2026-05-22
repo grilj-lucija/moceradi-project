@@ -1,37 +1,8 @@
 import 'dart:math' as math;
 
 import 'package:equatable/equatable.dart';
-import 'package:flutter/material.dart';
-
-enum WorkoutType { walking, running, cycling }
-
-extension WorkoutTypeX on WorkoutType {
-  String get label => switch (this) {
-        WorkoutType.walking => 'Walking',
-        WorkoutType.running => 'Running',
-        WorkoutType.cycling => 'Cycling',
-      };
-
-  IconData get icon => switch (this) {
-        WorkoutType.walking => Icons.directions_walk,
-        WorkoutType.running => Icons.directions_run,
-        WorkoutType.cycling => Icons.directions_bike,
-      };
-
-  double get metValue => switch (this) {
-        WorkoutType.walking => 3.5,
-        WorkoutType.running => 9.8,
-        WorkoutType.cycling => 7.5,
-      };
-
-  bool get usesPace => switch (this) {
-        WorkoutType.walking => true,
-        WorkoutType.running => true,
-        WorkoutType.cycling => false,
-      };
-
-  String get paceUnit => usesPace ? '/km' : 'km/h';
-}
+import 'package:health_app/data/models/activity.dart';
+export 'package:health_app/data/models/activity.dart' show ActivityType, ActivityTypeX;
 
 class WorkoutPoint extends Equatable {
   const WorkoutPoint({
@@ -95,7 +66,7 @@ class WorkoutSession extends Equatable {
   });
 
   factory WorkoutSession.initial({
-    required WorkoutType type,
+    required ActivityType type,
     required double weightKg,
     DateTime? startedAt,
   }) {
@@ -114,7 +85,7 @@ class WorkoutSession extends Equatable {
     );
   }
 
-  final WorkoutType type;
+  final ActivityType type;
   final DateTime startedAt;
   final int durationSeconds;
   final List<WorkoutPoint> points;

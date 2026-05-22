@@ -1,7 +1,7 @@
 import 'package:health_app/features/workout/domain/workout_session.dart';
 
 double estimateKcal({
-  required WorkoutType type,
+  required ActivityType type,
   required double weightKg,
   required Duration duration,
 }) {

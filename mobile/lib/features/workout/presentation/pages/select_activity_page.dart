@@ -32,21 +32,21 @@ class SelectActivityPage extends ConsumerWidget {
         ),
         SizedBox(height: spacing.stackLg),
         _ActivityCard(
-          type: WorkoutType.walking,
+          type: ActivityType.walking,
           caption: 'A casual stroll. Steady pace, low intensity.',
-          onTap: () => _start(context, ref, WorkoutType.walking),
+          onTap: () => _start(context, ref, ActivityType.walking),
         ),
         SizedBox(height: spacing.stackMd),
         _ActivityCard(
-          type: WorkoutType.running,
+          type: ActivityType.running,
           caption: 'Push your pace. Higher MET, more calories.',
-          onTap: () => _start(context, ref, WorkoutType.running),
+          onTap: () => _start(context, ref, ActivityType.running),
         ),
         SizedBox(height: spacing.stackMd),
         _ActivityCard(
-          type: WorkoutType.cycling,
+          type: ActivityType.cycling,
           caption: 'On the bike. Distance over time, lower impact.',
-          onTap: () => _start(context, ref, WorkoutType.cycling),
+          onTap: () => _start(context, ref, ActivityType.cycling),
         ),
       ],
     );
@@ -55,7 +55,7 @@ class SelectActivityPage extends ConsumerWidget {
   Future<void> _start(
     BuildContext context,
     WidgetRef ref,
-    WorkoutType type,
+    ActivityType type,
   ) async {
     final controller = ref.read(workoutControllerProvider.notifier);
     final error = await controller.start(type);
@@ -81,7 +81,7 @@ class _ActivityCard extends StatelessWidget {
     required this.onTap,
   });
 
-  final WorkoutType type;
+  final ActivityType type;
   final String caption;
   final VoidCallback onTap;
 
