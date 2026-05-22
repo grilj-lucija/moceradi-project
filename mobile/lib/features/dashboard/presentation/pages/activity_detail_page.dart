@@ -62,7 +62,7 @@ class ActivityDetailPage extends ConsumerWidget {
                     height: 280,
                     interactive: true,
                     animate: true,
-                    animationDuration: const Duration(milliseconds: 2200),
+                    animationDuration: const Duration(milliseconds: 1386),
                   ),
                 ),
               ),
