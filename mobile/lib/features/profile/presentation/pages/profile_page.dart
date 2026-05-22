@@ -18,35 +18,36 @@ class ProfilePage extends ConsumerWidget {
     final spacing = context.spacing;
     final profileAsync = ref.watch(currentProfileProvider);
 
-    return ListView(
-      padding: EdgeInsets.fromLTRB(
-        spacing.containerMarginMobile,
-        spacing.stackLg,
-        spacing.containerMarginMobile,
-        spacing.sectionGap + 80,
+    return Scaffold(
+      appBar: AppBar(title: const Text('Profile')),
+      body: ListView(
+        padding: EdgeInsets.fromLTRB(
+          spacing.containerMarginMobile,
+          spacing.stackMd,
+          spacing.containerMarginMobile,
+          spacing.sectionGap,
+        ),
+        children: [
+          profileAsync.when(
+            loading: () => const Padding(
+              padding: EdgeInsets.all(24),
+              child: Center(child: CircularProgressIndicator()),
+            ),
+            error: (e, _) => Text(
+              'Could not load profile: $e',
+              style: typography.bodyMd.copyWith(color: colors.error),
+            ),
+            data: (profile) => _ProfileBody(profile: profile),
+          ),
+          SizedBox(height: spacing.sectionGap),
+          GhostButton(
+            label: 'Sign out',
+            icon: Icons.logout,
+            onPressed: () =>
+                ref.read(authControllerProvider.notifier).signOut(),
+          ),
+        ],
       ),
-      children: [
-        Text('Profile', style: typography.headlineLgMobile),
-        SizedBox(height: spacing.stackLg),
-        profileAsync.when(
-          loading: () => const Padding(
-            padding: EdgeInsets.all(24),
-            child: Center(child: CircularProgressIndicator()),
-          ),
-          error: (e, _) => Text(
-            'Could not load profile: $e',
-            style: typography.bodyMd.copyWith(color: colors.error),
-          ),
-          data: (profile) => _ProfileBody(profile: profile),
-        ),
-        SizedBox(height: spacing.sectionGap),
-        GhostButton(
-          label: 'Sign out',
-          icon: Icons.logout,
-          onPressed: () =>
-              ref.read(authControllerProvider.notifier).signOut(),
-        ),
-      ],
     );
   }
 }

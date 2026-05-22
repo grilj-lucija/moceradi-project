@@ -33,7 +33,7 @@ class HomeShell extends StatelessWidget {
           items: const [
             GlassNavItem(icon: Icons.bolt_outlined, label: 'Today'),
             GlassNavItem(icon: Icons.timeline, label: 'Activities'),
-            GlassNavItem(icon: Icons.person_outline, label: 'Profile'),
+            GlassNavItem(icon: Icons.restaurant_outlined, label: 'Nutrition'),
           ],
         ),
       ),

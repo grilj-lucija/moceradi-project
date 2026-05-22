@@ -5,6 +5,7 @@ import 'package:health_app/app/router.dart';
 import 'package:health_app/app/theme/app_theme.dart';
 import 'package:health_app/features/workout/domain/workout_session.dart';
 import 'package:health_app/features/workout/presentation/providers/workout_controller.dart';
+import 'package:health_app/shared/widgets/layout/page_header.dart';
 
 class SelectActivityPage extends ConsumerWidget {
   const SelectActivityPage({super.key});
@@ -23,12 +24,7 @@ class SelectActivityPage extends ConsumerWidget {
         spacing.sectionGap + 80,
       ),
       children: [
-        Text(
-          'New workout',
-          style: typography.labelMd.copyWith(color: colors.onSurfaceVariant),
-        ),
-        SizedBox(height: spacing.stackSm / 2),
-        Text('Start a workout', style: typography.headlineLgMobile),
+        const PageHeader(eyebrow: 'New workout', title: 'Start a workout'),
         SizedBox(height: spacing.stackSm),
         Text(
           'Pick an activity. We will track your route, pace, and calories.',

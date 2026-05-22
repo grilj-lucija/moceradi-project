@@ -2,11 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:health_app/app/home_shell.dart';
+import 'package:health_app/data/models/food.dart';
 import 'package:health_app/features/auth/presentation/pages/login_page.dart';
 import 'package:health_app/features/auth/presentation/pages/register_page.dart';
 import 'package:health_app/features/auth/presentation/providers/auth_controller.dart';
 import 'package:health_app/features/auth/presentation/providers/profile_provider.dart';
 import 'package:health_app/features/dashboard/presentation/pages/dashboard_page.dart';
+import 'package:health_app/features/nutrition/presentation/pages/add_food_page.dart';
+import 'package:health_app/features/nutrition/presentation/pages/barcode_lookup_page.dart';
+import 'package:health_app/features/nutrition/presentation/pages/barcode_scan_page.dart';
+import 'package:health_app/features/nutrition/presentation/pages/custom_food_form_page.dart';
+import 'package:health_app/features/nutrition/presentation/pages/food_detail_entry_page.dart';
+import 'package:health_app/features/nutrition/presentation/pages/food_search_page.dart';
+import 'package:health_app/features/nutrition/presentation/pages/nutrition_page.dart';
+import 'package:health_app/features/nutrition/presentation/pages/photo_capture_page.dart';
+import 'package:health_app/features/nutrition/presentation/pages/recipe_form_page.dart';
+import 'package:health_app/features/nutrition/presentation/pages/recipes_page.dart';
 import 'package:health_app/features/onboarding/presentation/pages/onboarding_page.dart';
 import 'package:health_app/features/profile/presentation/pages/profile_page.dart';
 import 'package:health_app/features/workout/presentation/pages/active_workout_page.dart';
@@ -21,6 +32,16 @@ class AppRoutes {
   static const onboarding = '/onboarding';
   static const dashboard = '/';
   static const activities = '/activities';
+  static const nutrition = '/nutrition';
+  static const nutritionAdd = '/nutrition/add';
+  static const nutritionScan = '/nutrition/scan';
+  static const nutritionScanLookup = '/nutrition/scan/lookup';
+  static const nutritionSearch = '/nutrition/search';
+  static const nutritionEntry = '/nutrition/entry';
+  static const nutritionCustom = '/nutrition/custom';
+  static const nutritionPhoto = '/nutrition/photo';
+  static const nutritionRecipes = '/nutrition/recipes';
+  static const nutritionRecipeNew = '/nutrition/recipes/new';
   static const profile = '/profile';
   static const workoutActive = '/workout/active';
   static const workoutSummary = '/workout/summary';
@@ -93,6 +114,72 @@ final routerProvider = Provider<GoRouter>((ref) {
         parentNavigatorKey: navKey,
         builder: (context, state) => const WorkoutSummaryPage(),
       ),
+      GoRoute(
+        path: AppRoutes.profile,
+        parentNavigatorKey: navKey,
+        builder: (context, state) => const ProfilePage(),
+      ),
+      GoRoute(
+        path: AppRoutes.nutritionAdd,
+        parentNavigatorKey: navKey,
+        builder: (context, state) => const AddFoodPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.nutritionScan,
+        parentNavigatorKey: navKey,
+        builder: (context, state) => const BarcodeScanPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.nutritionScanLookup,
+        parentNavigatorKey: navKey,
+        builder: (context, state) {
+          final barcode = state.extra as String?;
+          if (barcode == null || barcode.isEmpty) {
+            return const Scaffold(
+              body: Center(child: Text('No barcode provided')),
+            );
+          }
+          return BarcodeLookupPage(barcode: barcode);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.nutritionSearch,
+        parentNavigatorKey: navKey,
+        builder: (context, state) => const FoodSearchPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.nutritionEntry,
+        parentNavigatorKey: navKey,
+        builder: (context, state) {
+          final food = state.extra as Food?;
+          if (food == null) {
+            return const Scaffold(
+              body: Center(child: Text('No food provided')),
+            );
+          }
+          return FoodDetailEntryPage(food: food);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.nutritionCustom,
+        parentNavigatorKey: navKey,
+        builder: (context, state) => const CustomFoodFormPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.nutritionPhoto,
+        parentNavigatorKey: navKey,
+        builder: (context, state) => const PhotoCapturePage(),
+      ),
+      GoRoute(
+        path: AppRoutes.nutritionRecipes,
+        parentNavigatorKey: navKey,
+        builder: (context, state) => const RecipesPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.nutritionRecipeNew,
+        parentNavigatorKey: navKey,
+        builder: (context, state) => const RecipeFormPage(),
+      ),
       StatefulShellRoute.indexedStack(
         parentNavigatorKey: navKey,
         builder: (context, state, navShell) => HomeShell(
@@ -121,8 +208,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: AppRoutes.profile,
-                builder: (context, state) => const ProfilePage(),
+                path: AppRoutes.nutrition,
+                builder: (context, state) => const NutritionPage(),
               ),
             ],
           ),

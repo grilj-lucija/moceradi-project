@@ -1,14 +1,16 @@
 {
   "name": "scraper",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Seeds curated generic foods + optionally caches popular OFF products into Supabase.",
+  "main": "seed.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node seed.js",
+    "seed": "node seed.js",
+    "seed:reset": "node seed.js --reset",
+    "off": "node off.js",
+    "off:slovenia": "node off.js --slovenia",
+    "off:global": "node off.js --global"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "type": "commonjs",
   "dependencies": {
     "axios": "^1.16.1",
