@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:geolocator/geolocator.dart' hide ActivityType;
 import 'package:health_app/di/providers.dart';
 import 'package:health_app/features/auth/presentation/providers/profile_provider.dart';
 import 'package:health_app/features/workout/domain/workout_session.dart';
@@ -20,7 +20,7 @@ class WorkoutController extends Notifier<WorkoutSession?> {
     return null;
   }
 
-  Future<WorkoutStartError?> start(WorkoutType type) async {
+  Future<WorkoutStartError?> start(ActivityType type) async {
     final location = ref.read(locationServiceProvider);
     final granted = await location.ensurePermission();
     if (!granted) return WorkoutStartError.permissionDenied;

@@ -3,10 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:health_app/app/router.dart';
 import 'package:health_app/app/theme/app_theme.dart';
+import 'package:health_app/di/providers.dart';
+import 'package:health_app/features/dashboard/presentation/providers/dashboard_controller.dart';
 import 'package:health_app/features/workout/domain/workout_session.dart';
 import 'package:health_app/features/workout/presentation/providers/workout_controller.dart';
 import 'package:health_app/features/workout/presentation/widgets/route_map.dart';
 import 'package:health_app/features/workout/services/format.dart';
+import 'package:health_app/shared/widgets/buttons/ghost_button.dart';
 import 'package:health_app/shared/widgets/buttons/primary_button.dart';
 import 'package:health_app/shared/widgets/cards/metric_tile.dart';
 
@@ -28,17 +31,73 @@ class WorkoutSummaryPage extends ConsumerWidget {
   }
 }
 
-class _SummaryBody extends ConsumerWidget {
+class _SummaryBody extends ConsumerStatefulWidget {
   const _SummaryBody({required this.session});
 
   final WorkoutSession session;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_SummaryBody> createState() => _SummaryBodyState();
+}
+
+class _SummaryBodyState extends ConsumerState<_SummaryBody> {
+  bool _saving = false;
+  bool _saved = false;
+
+  WorkoutSession get session => widget.session;
+
+  Future<void> _saveAndExit() async {
+    setState(() => _saving = true);
+    final result =
+        await ref.read(activitiesRepositoryProvider).save(session);
+    if (!mounted) return;
+    setState(() => _saving = false);
+    if (result.isErr) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Could not save: ${result.failureOrNull?.message ?? 'unknown error'}',
+          ),
+        ),
+      );
+      return;
+    }
+    setState(() => _saved = true);
+    ref.read(workoutControllerProvider.notifier).discard();
+    ref.invalidate(recentActivitiesProvider);
+    context.go(AppRoutes.dashboard);
+  }
+
+  Future<void> _discard() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Discard workout?'),
+        content: const Text(
+          'This workout will be deleted and not saved to your activities.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Keep'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Discard'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    ref.read(workoutControllerProvider.notifier).discard();
+    context.go(AppRoutes.dashboard);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final colors = context.colors;
     final typography = context.typography;
     final spacing = context.spacing;
-    final controller = ref.read(workoutControllerProvider.notifier);
     final paceUnit = session.type.paceUnit;
     final paceValue = session.type.usesPace
         ? formatPacePerKm(session.avgSpeedMps)
@@ -165,12 +224,20 @@ class _SummaryBody extends ConsumerWidget {
                 spacing.containerMarginMobile,
                 spacing.stackLg,
               ),
-              child: PrimaryButton(
-                label: 'Done',
-                onPressed: () {
-                  controller.discard();
-                  context.go(AppRoutes.dashboard);
-                },
+              child: Column(
+                children: [
+                  PrimaryButton(
+                    label: _saved ? 'Saved' : 'Save workout',
+                    icon: _saved ? Icons.check : Icons.save_alt,
+                    isLoading: _saving,
+                    onPressed: _saving || _saved ? null : _saveAndExit,
+                  ),
+                  SizedBox(height: spacing.stackSm),
+                  GhostButton(
+                    label: 'Discard',
+                    onPressed: _saving ? null : _discard,
+                  ),
+                ],
               ),
             ),
           ],
@@ -248,7 +315,7 @@ class _LapRow extends StatelessWidget {
   });
 
   final WorkoutLap lap;
-  final WorkoutType type;
+  final ActivityType type;
   final double fastestSpeedMps;
   final double slowestSpeedMps;
 

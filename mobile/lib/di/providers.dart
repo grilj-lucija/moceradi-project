@@ -7,6 +7,7 @@ import 'package:health_app/data/repositories/nutrition_log_repository_impl.dart'
 import 'package:health_app/data/repositories/profile_repository_impl.dart';
 import 'package:health_app/data/sources/activities/activities_source.dart';
 import 'package:health_app/data/sources/activities/mock_activities_source.dart';
+import 'package:health_app/data/sources/activities/supabase_activities_source.dart';
 import 'package:health_app/data/sources/auth/auth_source.dart';
 import 'package:health_app/data/sources/auth/mock_auth_source.dart';
 import 'package:health_app/data/sources/auth/supabase_auth_source.dart';
@@ -43,7 +44,10 @@ final authSourceProvider = Provider<AuthSource>((ref) {
 });
 
 final activitiesSourceProvider = Provider<ActivitiesSource>((ref) {
-  return MockActivitiesSource();
+  if (Env.useMockData || !Env.isSupabaseConfigured) {
+    return MockActivitiesSource();
+  }
+  return SupabaseActivitiesSource(ref.watch(supabaseClientProvider));
 });
 
 final profileSourceProvider = Provider<ProfileSource>((ref) {
