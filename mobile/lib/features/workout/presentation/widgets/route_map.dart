@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:health_app/app/theme/app_theme.dart';
@@ -23,9 +25,17 @@ class RouteMap extends StatefulWidget {
   State<RouteMap> createState() => _RouteMapState();
 }
 
-class _RouteMapState extends State<RouteMap> {
+class _RouteMapState extends State<RouteMap>
+    with SingleTickerProviderStateMixin {
   late final MapController _controller;
+  late final AnimationController _markerCtrl;
   bool _didFitOnce = false;
+  LatLng? _fromPos;
+  LatLng? _toPos;
+
+  static const _minInterp = Duration(milliseconds: 250);
+  static const _maxInterp = Duration(milliseconds: 3000);
+  static const _defaultInterp = Duration(milliseconds: 1000);
 
   static const List<double> _darkenMatrix = [
     0.55, 0, 0, 0, 0,
@@ -38,40 +48,99 @@ class _RouteMapState extends State<RouteMap> {
   void initState() {
     super.initState();
     _controller = MapController();
+    _markerCtrl = AnimationController(vsync: this, duration: _defaultInterp);
+    _markerCtrl.addListener(_onMarkerTick);
+    if (widget.points.isNotEmpty) {
+      final p = widget.points.last;
+      _fromPos = LatLng(p.lat, p.lng);
+      _toPos = _fromPos;
+    }
   }
 
   @override
   void didUpdateWidget(covariant RouteMap oldWidget) {
     super.didUpdateWidget(oldWidget);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _syncCamera());
+    _syncLastPoint(oldWidget.points);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _syncFitBoundsOnce());
   }
 
   @override
   void dispose() {
+    _markerCtrl
+      ..removeListener(_onMarkerTick)
+      ..dispose();
     _controller.dispose();
     super.dispose();
   }
 
-  void _syncCamera() {
+  void _onMarkerTick() {
     if (!mounted) return;
-    if (widget.fitBounds && widget.points.length >= 2 && !_didFitOnce) {
-      final pts = widget.points
-          .map((p) => LatLng(p.lat, p.lng))
-          .toList(growable: false);
-      final bounds = LatLngBounds.fromPoints(pts);
-      _controller.fitCamera(
-        CameraFit.bounds(
-          bounds: bounds,
-          padding: const EdgeInsets.all(40),
-        ),
-      );
-      _didFitOnce = true;
+    if (widget.follow) {
+      final pos = _currentMarkerLatLng;
+      if (pos != null) {
+        _controller.move(pos, _controller.camera.zoom);
+      }
+    }
+    setState(() {});
+  }
+
+  LatLng? get _currentMarkerLatLng {
+    if (_fromPos == null || _toPos == null) return _toPos;
+    final t = _markerCtrl.value;
+    return LatLng(
+      _fromPos!.latitude + (_toPos!.latitude - _fromPos!.latitude) * t,
+      _fromPos!.longitude + (_toPos!.longitude - _fromPos!.longitude) * t,
+    );
+  }
+
+  void _syncLastPoint(List<WorkoutPoint> oldPoints) {
+    final pts = widget.points;
+    if (pts.isEmpty) return;
+    final newTarget = LatLng(pts.last.lat, pts.last.lng);
+    if (_toPos == null) {
+      _fromPos = newTarget;
+      _toPos = newTarget;
       return;
     }
-    if (widget.follow && widget.points.isNotEmpty) {
-      final last = widget.points.last;
-      _controller.move(LatLng(last.lat, last.lng), _controller.camera.zoom);
+    final sameTarget = _toPos!.latitude == newTarget.latitude &&
+        _toPos!.longitude == newTarget.longitude;
+    if (sameTarget) return;
+    final currentDisplayed = _currentMarkerLatLng ?? _toPos!;
+    _fromPos = currentDisplayed;
+    _toPos = newTarget;
+    var dur = _defaultInterp;
+    if (pts.length >= 2) {
+      final ms = pts.last.t.difference(pts[pts.length - 2].t).inMilliseconds;
+      if (ms > 0) {
+        dur = Duration(
+          milliseconds: ms.clamp(
+            _minInterp.inMilliseconds,
+            _maxInterp.inMilliseconds,
+          ),
+        );
+      }
     }
+    _markerCtrl
+      ..stop()
+      ..duration = dur;
+    unawaited(_markerCtrl.forward(from: 0));
+  }
+
+  void _syncFitBoundsOnce() {
+    if (!mounted) return;
+    if (!widget.fitBounds || _didFitOnce) return;
+    if (widget.points.length < 2) return;
+    final pts = widget.points
+        .map((p) => LatLng(p.lat, p.lng))
+        .toList(growable: false);
+    final bounds = LatLngBounds.fromPoints(pts);
+    _controller.fitCamera(
+      CameraFit.bounds(
+        bounds: bounds,
+        padding: const EdgeInsets.all(40),
+      ),
+    );
+    _didFitOnce = true;
   }
 
   LatLng get _initialCenter {
@@ -88,9 +157,13 @@ class _RouteMapState extends State<RouteMap> {
     final radius = context.radius;
     final token = Env.mapboxPublicToken;
 
-    final latLngPoints = widget.points
+    final rawPoints = widget.points
         .map((p) => LatLng(p.lat, p.lng))
         .toList(growable: false);
+    final liveHead = _currentMarkerLatLng;
+    final livePolyline = rawPoints.isEmpty
+        ? const <LatLng>[]
+        : (liveHead == null ? rawPoints : [...rawPoints, liveHead]);
 
     return ClipRRect(
       borderRadius: radius.xlRadius,
@@ -122,25 +195,25 @@ class _RouteMapState extends State<RouteMap> {
                   child: tileWidget,
                 ),
               ),
-              if (latLngPoints.length >= 2)
+              if (livePolyline.length >= 2)
                 PolylineLayer(
                   polylines: [
                     Polyline(
-                      points: latLngPoints,
+                      points: livePolyline,
                       strokeWidth: 16,
                       color: colors.enduranceCyan.withValues(alpha: 0.12),
                       strokeCap: StrokeCap.round,
                       strokeJoin: StrokeJoin.round,
                     ),
                     Polyline(
-                      points: latLngPoints,
+                      points: livePolyline,
                       strokeWidth: 10,
                       color: colors.enduranceCyan.withValues(alpha: 0.25),
                       strokeCap: StrokeCap.round,
                       strokeJoin: StrokeJoin.round,
                     ),
                     Polyline(
-                      points: latLngPoints,
+                      points: livePolyline,
                       strokeWidth: 4,
                       color: colors.enduranceCyan,
                       strokeCap: StrokeCap.round,
@@ -148,18 +221,18 @@ class _RouteMapState extends State<RouteMap> {
                     ),
                   ],
                 ),
-              if (latLngPoints.isNotEmpty)
+              if (rawPoints.isNotEmpty)
                 MarkerLayer(
                   markers: [
-                    if (latLngPoints.length > 1)
+                    if (rawPoints.length > 1)
                       Marker(
-                        point: latLngPoints.first,
+                        point: rawPoints.first,
                         width: 14,
                         height: 14,
                         child: _StartDot(color: colors.enduranceCyan),
                       ),
                     Marker(
-                      point: latLngPoints.last,
+                      point: liveHead ?? rawPoints.last,
                       width: 28,
                       height: 28,
                       child: _EndDot(color: colors.enduranceCyan),
