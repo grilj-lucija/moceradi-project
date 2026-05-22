@@ -2,17 +2,31 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:health_app/core/config/env.dart';
 import 'package:health_app/data/repositories/activities_repository_impl.dart';
 import 'package:health_app/data/repositories/auth_repository_impl.dart';
+import 'package:health_app/data/repositories/foods_repository_impl.dart';
+import 'package:health_app/data/repositories/nutrition_log_repository_impl.dart';
 import 'package:health_app/data/repositories/profile_repository_impl.dart';
 import 'package:health_app/data/sources/activities/activities_source.dart';
 import 'package:health_app/data/sources/activities/mock_activities_source.dart';
 import 'package:health_app/data/sources/auth/auth_source.dart';
 import 'package:health_app/data/sources/auth/mock_auth_source.dart';
 import 'package:health_app/data/sources/auth/supabase_auth_source.dart';
+import 'package:health_app/data/sources/foods/composite_foods_source.dart';
+import 'package:health_app/data/sources/foods/foods_source.dart';
+import 'package:health_app/data/sources/foods/local_foods_source.dart';
+import 'package:health_app/data/sources/foods/open_food_facts_foods_source.dart';
+import 'package:health_app/data/sources/foods/supabase_foods_source.dart';
+import 'package:health_app/data/sources/foods/supabase_generic_foods_source.dart';
+import 'package:health_app/data/sources/foods/supabase_popular_foods_source.dart';
+import 'package:health_app/data/sources/nutrition_log/mock_nutrition_log_source.dart';
+import 'package:health_app/data/sources/nutrition_log/nutrition_log_source.dart';
+import 'package:health_app/data/sources/nutrition_log/supabase_nutrition_log_source.dart';
 import 'package:health_app/data/sources/profile/mock_profile_source.dart';
 import 'package:health_app/data/sources/profile/profile_source.dart';
 import 'package:health_app/data/sources/profile/supabase_profile_source.dart';
 import 'package:health_app/domain/repositories/activities_repository.dart';
 import 'package:health_app/domain/repositories/auth_repository.dart';
+import 'package:health_app/domain/repositories/foods_repository.dart';
+import 'package:health_app/domain/repositories/nutrition_log_repository.dart';
 import 'package:health_app/domain/repositories/profile_repository.dart';
 import 'package:health_app/features/workout/services/location_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -53,4 +67,39 @@ final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
 
 final locationServiceProvider = Provider<LocationService>((ref) {
   return const LocationService();
+});
+
+final foodsSourceProvider = Provider<FoodsSource>((ref) {
+  final useRemote = !Env.useMockData && Env.isSupabaseConfigured;
+  if (!useRemote) {
+    final local = LocalFoodsSource();
+    return CompositeFoodsSource(
+      barcodeRemote: OpenFoodFactsFoodsSource(),
+      barcodeCache: local,
+      catalog: local,
+      library: local,
+    );
+  }
+  final client = ref.watch(supabaseClientProvider);
+  return CompositeFoodsSource(
+    barcodeRemote: OpenFoodFactsFoodsSource(),
+    barcodeCache: SupabasePopularFoodsSource(client),
+    catalog: SupabaseGenericFoodsSource(client),
+    library: SupabaseFoodsSource(client),
+  );
+});
+
+final nutritionLogSourceProvider = Provider<NutritionLogSource>((ref) {
+  if (Env.useMockData || !Env.isSupabaseConfigured) {
+    return MockNutritionLogSource();
+  }
+  return SupabaseNutritionLogSource(ref.watch(supabaseClientProvider));
+});
+
+final foodsRepositoryProvider = Provider<FoodsRepository>((ref) {
+  return FoodsRepositoryImpl(ref.watch(foodsSourceProvider));
+});
+
+final nutritionLogRepositoryProvider = Provider<NutritionLogRepository>((ref) {
+  return NutritionLogRepositoryImpl(ref.watch(nutritionLogSourceProvider));
 });

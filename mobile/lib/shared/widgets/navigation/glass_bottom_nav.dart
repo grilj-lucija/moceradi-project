@@ -9,6 +9,11 @@ class GlassNavItem {
   final String label;
 }
 
+const double kGlassNavPillHeight = 64;
+const double kGlassNavVerticalPadding = 8;
+const double kGlassNavBlockHeight =
+    kGlassNavPillHeight + kGlassNavVerticalPadding * 2;
+
 class GlassBottomNav extends StatelessWidget {
   const GlassBottomNav({
     required this.items,

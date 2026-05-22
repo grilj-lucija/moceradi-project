@@ -5,6 +5,7 @@ import 'package:health_app/data/models/activity.dart';
 import 'package:health_app/features/dashboard/presentation/providers/dashboard_controller.dart';
 import 'package:health_app/shared/widgets/cards/glass_card.dart';
 import 'package:health_app/shared/widgets/cards/metric_tile.dart';
+import 'package:health_app/shared/widgets/layout/page_header.dart';
 import 'package:health_app/shared/widgets/progress/progress_ring.dart';
 
 class DashboardPage extends ConsumerWidget {
@@ -27,11 +28,7 @@ class DashboardPage extends ConsumerWidget {
           spacing.sectionGap + 80,
         ),
         children: [
-          Text('Today', style: typography.labelMd.copyWith(
-            color: colors.onSurfaceVariant,
-          )),
-          SizedBox(height: spacing.stackSm / 2),
-          Text("Let's flow", style: typography.headlineLgMobile),
+          const PageHeader(eyebrow: 'Today', title: "Let's flow"),
           SizedBox(height: spacing.stackLg),
           GlassCard(
             child: Row(
