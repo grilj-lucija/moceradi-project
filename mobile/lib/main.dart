@@ -4,6 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:health_app/app/app.dart';
 import 'package:health_app/core/config/env.dart';
+import 'package:health_app/core/map/tile_cache.dart';
 import 'package:openfoodfacts/openfoodfacts.dart' as off;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -33,6 +34,10 @@ Future<void> main() async {
       anonKey: Env.supabaseAnonKey,
     );
   }
+
+  try {
+    await MapTileCache.init();
+  } on Object catch (_) {}
 
   runApp(const ProviderScope(child: HealthApp()));
 }
