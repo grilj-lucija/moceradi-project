@@ -49,20 +49,22 @@ function Auth(){
             }
         }
     return (
-        <div style={{ padding: '40px', maxWidth: '400px', margin: '0 auto'}}>
+        <div className='auth-container'>
+            <div className='auth-card'>
             <h2>{isLogin ? 'Prijava' : 'Registracija'}</h2>
             {!isLogin && (
-                <input placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} style={{ display: 'block', width: '100%', padding: '8px', marginBottom: '10px'}}/>
+                <input className='auth-input' placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} style={{ display: 'block', width: '100%', padding: '8px', marginBottom: '10px'}}/>
             )}
-            <input placeholder="Username"  value={username} onChange={e => setUsername(e.target.value)} style={{ display: 'block', width: '100%', padding: '8px', marginBottom: '10px'}}/>
-            <input placeholder="Geslo" type="password" value={password} onChange={e => setPassword(e.target.value)} style={{ display: 'block', width: '100%', padding: '8px', marginBottom: '10px'}}/>
-            <button onClick={handleSubmit} style={{ padding: '8px 20px'}}>
+            <input className='auth-input' placeholder="Username"  value={username} onChange={e => setUsername(e.target.value)} style={{ display: 'block', width: '100%', padding: '8px', marginBottom: '10px'}}/>
+            <input className='auth-input' placeholder="Geslo" type="password" value={password} onChange={e => setPassword(e.target.value)} style={{ display: 'block', width: '100%', padding: '8px', marginBottom: '10px'}}/>
+            <button className='btn-primary' onClick={handleSubmit} style={{ padding: '8px 20px'}}>
                 {isLogin ? 'Prijavi se' : 'Registriraj se'}
             </button>
-            <p style={{ cursor: 'pointer', color: 'blue'}} onClick={() => setIsLogin(!isLogin)}>
+            <p className='auth-switch' onClick={() => setIsLogin(!isLogin)}>
                 {isLogin ? 'Nimaš računa? Registriraj se' : 'Že imaš račun? Prijavi se'}
             </p>
-            {message && <p>{message}</p>}
+            {message && <p style={{color: '#ff4d4d', marginTop: '10px'}}>{message}</p>}
+            </div>
         </div>
     );
            

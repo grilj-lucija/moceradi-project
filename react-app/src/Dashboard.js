@@ -4,7 +4,7 @@ import { BarChart, Bar, XAxis, Tooltip, CartesianGrid, LineChart, Line, YAxis } 
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
-function Dashboard({ session, onBack}){
+function Dashboard({ session}){
     const [activities, setActivities] = useState([]);
 
     useEffect(() => {
@@ -42,29 +42,29 @@ function Dashboard({ session, onBack}){
     const statBox = {padding: '20px', border: '1px solid #ddd', borderRadius: '8px', textAlign: 'center', minWidth: '150px'};
 
     return (
-        <div style={{ padding: '20px'}}>
-            <button onClick={onBack} style={{ marginBottom: '20px'}}>Nazaj</button>
-            <h2>Dashboard</h2>
+        <div className='page-container'>
+            <h2 className='section-title'>Dashboard</h2>
 
-            <div style={{display: 'flex', gap: '20px', marginBottom: '30px'}}>
-                <div style={statBox}>
+            <div className='stat-grid'>
+                <div className='stat-card'>
                     <h3>Skupna razdalja</h3>
-                    <p style={{fontSize: '24px'}}>{(totalDistance/1000).toFixed(2)} km</p>
+                    <p>{(totalDistance/1000).toFixed(2)} km</p>
                 </div>
-                <div style={statBox}>
+                <div className='stat-card'>
                     <h3>Skupne kalorije</h3>
-                    <p style={{fontSize: '24px'}}>{totalCalories.toFixed(0)} kcal</p>
+                    <p>{totalCalories.toFixed(0)} kcal</p>
                 </div>
-                <div style={statBox}>
+                <div className='stat-card'>
                     <h3>Skupni čas</h3>
-                    <p style={{fontSize: '24px'}}>{Math.round(totalDuration / 60)} min</p>
+                    <p>{Math.round(totalDuration / 60)} min</p>
                 </div>
-                <div style={statBox}>
+                <div className='stat-card'>
                     <h3>Število aktivnosti</h3>
-                    <p style={{fontSize: '24px'}}>{activities.length}</p>
+                    <p>{activities.length}</p>
                 </div>
             </div>
-            <h3>Kalorije po aktivnostih</h3>
+            <h3 className='section-title'>Kalorije po aktivnostih</h3>
+            <div className='card'>
             <BarChart width={700} height={250} data={caloriesData} style={{marginBottom: '30px'}}>
                 <CartesianGrid strokeDasharray="3 3"/>
                 <XAxis dataKey="name" tick={{fontSize: 10}}/>
@@ -72,7 +72,10 @@ function Dashboard({ session, onBack}){
                 <Tooltip />
                 <Bar dataKey="kalorije" fill='#ff7300' name="Kalorije (kcal)"/>
             </BarChart>
-            <h3>Razdalja po aktivnostih (km)</h3>
+            </div>
+
+            <h3 className='section-title'>Razdalja po aktivnostih (km)</h3>
+            <div className='card'>
             <BarChart width={700} height={250} data={distanceData} style={{marginBottom: '30px'}}>
                 <CartesianGrid strokeDasharray="3 3"/>
                 <XAxis dataKey="name" tick={{fontSize: 10}}/>
@@ -80,8 +83,9 @@ function Dashboard({ session, onBack}){
                 <Tooltip />
                 <Bar type="monotone" dataKey="razdalja" fill='#8884d8' name="Razdalja (km)"/>
             </BarChart>
+            </div>
 
-            <h3>Lokacija</h3>
+            <h3 className='section-title'>Lokacija</h3>
             <MapContainer center={[46.1512, 14.9955]} zoom={8} style={{ height: '400px', width: '100%', marginBottom: '30px'}}>
                 <TileLayer url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png' attribution='© OpenStreetMap'/>
                 {activities.filter(a => a.start_lat && a.start_lng).map(a => (
@@ -95,8 +99,9 @@ function Dashboard({ session, onBack}){
                 ))}
             </MapContainer>
 
-            <h3>Historia aktivnosti</h3>
-            <table border="1" cellPadding="10" style={{ width: '100%'}}>
+            <h3 className='section-data'>Historia aktivnosti</h3>
+            <div className='card'>
+            <table className='data-table'>
                 <thead>
                     <tr>
                         <th>Datum</th>
@@ -120,7 +125,7 @@ function Dashboard({ session, onBack}){
                     ))}
                 </tbody>
             </table>
-
+            </div>
         </div>
     );
 }

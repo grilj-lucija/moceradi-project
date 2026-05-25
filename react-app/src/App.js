@@ -6,14 +6,14 @@ import MapView from './MapView';
 import Auth from './Auth';
 import Profile from './Profile';
 import Dashboard from './Dashboard';
+import Navbar from './Navbar';
 
 function App(){
   const [session, setSession] = useState(null);
   const [ingredients, setIngredients] = useState([]);
   const [search, setSearch] = useState('');
   const [username, setUsername] = useState();
-  const [showProfile, setShowProfile] = useState(false);
-  const [showDashboard, setShowDashboard] = useState(false);
+  const [page, setPage] = useState('home');
 
   useEffect(() => {
     supabase.auth.getSession().then(({data: {session}}) => setSession(session));
@@ -46,32 +46,18 @@ function App(){
 
   const topTen = [...ingredients].filter(i => i.calorie_count).sort((a, b) => b.calorie_count - a.calorie_count).slice(0, 10);
   
-  if(!session){
-    return <Auth />
-  }
-
-  if(showProfile){
-    return <Profile session={session} onBack={() => setShowProfile(false)}/>;
-  }
-
-  if(showDashboard){
-    return <Dashboard session={session} onBack={() => setShowDashboard(false)}/>
-  }
+  if(!session) return <Auth />;
 
   return (
-    <div style={{padding: '20px'}}>
-      <div style={{display: 'flex', justifyContent: 'space-between'}}>
-      <h1>Močerad CT - Seznam živil</h1>
-      <div>
-        <span>Pozdravljeni, {username || session.user.email}</span>
-        <button onClick={() => setShowProfile(true)} style={{ marginLeft: '10px'}}>Profil</button>
-        <button onClick={() => setShowDashboard(true)} style={{marginLeft: '10px'}}>Dashboard</button>
-        <button onClick={handleLogout} style={{marginLeft: '10px'}}>Odjava</button>
-      </div>
-      </div>
-      <input type='text' placeholder='Išči živilo...' value={search} onChange={e => setSearch(e.target.value)} style={{padding: '8px', width: '300px', marginBottom: '20px'}}/>
+    <div>
+     <Navbar username={username || session.user.email} onHome={() => setPage('home')} onDashboard={() => setPage('dashboard')} onProfile={() => setPage('profile')} onLogout={handleLogout} page={page}/>
+    {page === 'home' && (
+    <div className='page-container'>
+      <h1 className='section-title'>Seznam živil</h1>
+      <input className='search-input' type='text' placeholder='Išči živilo...' value={search} onChange={e => setSearch(e.target.value)} style={{padding: '8px', width: '300px', marginBottom: '20px'}}/>
 
-      <h2>Top 10 živil po kaloričnosti</h2>
+      <h2 className='section-title'>Top 10 živil po kaloričnosti</h2>
+      <div className='card'>
       <BarChart width={700} height={300} data={topTen}>
         <CartesianGrid strokeDasharray="3 3"/>
         <XAxis dataKey="name" tick={{fontSize: 10}} />
@@ -79,10 +65,12 @@ function App(){
         <Tooltip/>
         <Bar dataKey="calorie_count" fill='#8884d8' name="Kalorije (kcal)" />
       </BarChart>
+      </div>
 
 
-      <h2>Vsa živila</h2>
-      <table border="1" cellPadding="8">
+      <h2 className='section.title'>Vsa živila</h2>
+      <div className='card'>
+      <table className='data-table' border="1" cellPadding="8">
         <thead>
           <tr>
             <th>Ime</th>
@@ -98,9 +86,13 @@ function App(){
           ))}
         </tbody>
       </table>
+      </div>
       <MapView />
     </div>
+  )}
+  {page === 'dashboard' && <Dashboard session={session} />}
+  {page === 'profile' && <Profile session={session} />}
+  </div>
   );
 }
-
 export default App;
