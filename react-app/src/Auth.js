@@ -11,18 +11,18 @@ function Auth(){
     async function handleSubmit() 
     {
         if(isLogin){
-            const {data, error: fetchError} = await supabase
-                .from('profiles')
-                .select('email')
-                .eq('username', username)
-                .single();
+            // const {data, error: fetchError} = await supabase
+            //     .from('profiles')
+            //     .select('email')
+            //     .eq('username', username)
+            //     .single();
 
-            if(fetchError || !data){
-                    setMessage('Uporabnik ne obstaja');
-                    return;
-                }
+            // if(fetchError || !data){
+            //         setMessage('Uporabnik ne obstaja');
+            //         return;
+            //     }
             const {error: loginError} = await supabase.auth.signInWithPassword({
-                email: data.email,
+                email: email,
                 password
             });    
 
@@ -53,9 +53,9 @@ function Auth(){
             <div className='auth-card'>
             <h2>{isLogin ? 'Prijava' : 'Registracija'}</h2>
             {!isLogin && (
-                <input className='auth-input' placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} style={{ display: 'block', width: '100%', padding: '8px', marginBottom: '10px'}}/>
-            )}
             <input className='auth-input' placeholder="Username"  value={username} onChange={e => setUsername(e.target.value)} style={{ display: 'block', width: '100%', padding: '8px', marginBottom: '10px'}}/>
+            )}
+            <input className='auth-input' placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} style={{ display: 'block', width: '100%', padding: '8px', marginBottom: '10px'}}/>
             <input className='auth-input' placeholder="Geslo" type="password" value={password} onChange={e => setPassword(e.target.value)} style={{ display: 'block', width: '100%', padding: '8px', marginBottom: '10px'}}/>
             <button className='btn-primary' onClick={handleSubmit} style={{ padding: '8px 20px'}}>
                 {isLogin ? 'Prijavi se' : 'Registriraj se'}
