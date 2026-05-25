@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:health_app/app/theme/app_theme.dart';
 import 'package:health_app/core/config/env.dart';
+import 'package:health_app/core/map/tile_cache.dart';
 import 'package:health_app/data/models/activity.dart';
 import 'package:health_app/features/workout/services/polyline_codec.dart' as pl;
 import 'package:latlong2/latlong.dart';
@@ -58,7 +59,6 @@ class _RoutePreviewState extends State<RoutePreview>
     parent: _animController,
     curve: Curves.easeInCubic,
   );
-  bool _didFit = false;
   bool _didStartAnim = false;
   List<LatLng>? _animPoints;
   List<double>? _animCumDist;
@@ -70,6 +70,8 @@ class _RoutePreviewState extends State<RoutePreview>
     0, 0, 0.63, 0, 0,
     0, 0, 0, 1, 0,
   ];
+
+  static const Color _mapBaseColor = Color(0xFF0F1620);
 
   @override
   void dispose() {
@@ -99,18 +101,24 @@ class _RoutePreviewState extends State<RoutePreview>
     return const LatLng(46.5547, 15.6459);
   }
 
-  void _fitOnce(List<LatLng> pts) {
-    if (_didFit || pts.length < 2) return;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      _controller.fitCamera(
-        CameraFit.bounds(
-          bounds: LatLngBounds.fromPoints(pts),
-          padding: const EdgeInsets.all(24),
-        ),
+  CameraFit? _initialCameraFit(List<LatLng> pts) {
+    if (pts.length >= 2) {
+      return CameraFit.bounds(
+        bounds: LatLngBounds.fromPoints(pts),
+        padding: const EdgeInsets.all(24),
       );
-      _didFit = true;
-    });
+    }
+    final b = widget.bounds;
+    if (b != null) {
+      return CameraFit.bounds(
+        bounds: LatLngBounds(
+          LatLng(b.north, b.west),
+          LatLng(b.south, b.east),
+        ),
+        padding: const EdgeInsets.all(24),
+      );
+    }
+    return null;
   }
 
   void _maybeStartAnim(List<LatLng> pts) {
@@ -177,24 +185,25 @@ class _RoutePreviewState extends State<RoutePreview>
     final token = Env.mapboxPublicToken;
     final pts = _points;
     if (widget.animate) _prepareAnimPoints(pts);
-    _fitOnce(pts);
     _maybeStartAnim(pts);
+    final initialFit = _initialCameraFit(pts);
 
     return SizedBox(
       height: widget.height,
       child: Stack(
         children: [
           const Positioned.fill(
-            child: ColoredBox(color: Color(0xFF05070B)),
+            child: ColoredBox(color: _mapBaseColor),
           ),
           FlutterMap(
             mapController: _controller,
             options: MapOptions(
               initialCenter: _initialCenter,
               initialZoom: 14,
+              initialCameraFit: initialFit,
               minZoom: 2,
               maxZoom: 19,
-              backgroundColor: const Color(0xFF05070B),
+              backgroundColor: _mapBaseColor,
               interactionOptions: InteractionOptions(
                 flags: widget.interactive
                     ? InteractiveFlag.pinchZoom | InteractiveFlag.doubleTapZoom
@@ -207,6 +216,13 @@ class _RoutePreviewState extends State<RoutePreview>
                     'https://api.mapbox.com/styles/v1/mapbox/dark-v11/tiles/{z}/{x}/{y}@2x?access_token=$token',
                 userAgentPackageName: 'com.feri.health_app',
                 maxNativeZoom: 19,
+                tileProvider: MapTileCache.provider() ?? NetworkTileProvider(),
+                keepBuffer: 4,
+                tileDisplay: const TileDisplay.fadeIn(
+                  duration: Duration(milliseconds: 250),
+                  startOpacity: 0,
+                  reloadStartOpacity: 0,
+                ),
                 tileBuilder: (context, tileWidget, tile) => ColorFiltered(
                   colorFilter: const ColorFilter.matrix(_darkenMatrix),
                   child: tileWidget,

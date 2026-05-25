@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:health_app/app/theme/app_theme.dart';
 import 'package:health_app/core/config/env.dart';
+import 'package:health_app/core/map/tile_cache.dart';
 import 'package:health_app/features/workout/domain/workout_session.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -190,6 +191,8 @@ class _RouteMapState extends State<RouteMap>
                     'https://api.mapbox.com/styles/v1/mapbox/dark-v11/tiles/{z}/{x}/{y}@2x?access_token=$token',
                 userAgentPackageName: 'com.feri.health_app',
                 maxNativeZoom: 19,
+                tileProvider: MapTileCache.provider() ?? NetworkTileProvider(),
+                keepBuffer: 4,
                 tileBuilder: (context, tileWidget, tile) => ColorFiltered(
                   colorFilter: const ColorFilter.matrix(_darkenMatrix),
                   child: tileWidget,
