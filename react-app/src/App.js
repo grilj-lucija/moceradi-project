@@ -56,16 +56,6 @@ function App(){
       <h1 className='section-title'>Seznam živil</h1>
       <input className='search-input' type='text' placeholder='Išči živilo...' value={search} onChange={e => setSearch(e.target.value)} style={{padding: '8px', width: '300px', marginBottom: '20px'}}/>
 
-      <h2 className='section-title'>Top 10 živil po kaloričnosti</h2>
-      <div className='card'>
-      <BarChart width={700} height={300} data={topTen}>
-        <CartesianGrid strokeDasharray="3 3"/>
-        <XAxis dataKey="name" tick={{fontSize: 10}} />
-        <YAxis/>
-        <Tooltip/>
-        <Bar dataKey="calorie_count" fill='#8884d8' name="Kalorije (kcal)" />
-      </BarChart>
-      </div>
 
 
       <h2 className='section.title'>Vsa živila</h2>
@@ -86,6 +76,16 @@ function App(){
           ))}
         </tbody>
       </table>
+      </div>
+      <h2 className='section-title'>Top 10 živil po kaloričnosti</h2>
+      <div className='card'>
+      <BarChart width={700} height={300} data={topTen}>
+        <CartesianGrid strokeDasharray="3 3"/>
+        <XAxis dataKey="name" tick={{fontSize: 10}} />
+        <YAxis/>
+        <Tooltip/>
+        <Bar dataKey="calorie_count" fill='#8884d8' name="Kalorije (kcal)" />
+      </BarChart>
       </div>
       <MapView />
     </div>
