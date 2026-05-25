@@ -5,6 +5,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import MapView from './MapView';
 import Auth from './Auth';
 import Profile from './Profile';
+import Dashboard from './Dashboard';
 
 function App(){
   const [session, setSession] = useState(null);
@@ -12,6 +13,7 @@ function App(){
   const [search, setSearch] = useState('');
   const [username, setUsername] = useState();
   const [showProfile, setShowProfile] = useState(false);
+  const [showDashboard, setShowDashboard] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({data: {session}}) => setSession(session));
@@ -52,14 +54,19 @@ function App(){
     return <Profile session={session} onBack={() => setShowProfile(false)}/>;
   }
 
+  if(showDashboard){
+    return <Dashboard session={session} onBack={() => setShowDashboard(false)}/>
+  }
+
   return (
     <div style={{padding: '20px'}}>
       <div style={{display: 'flex', justifyContent: 'space-between'}}>
       <h1>Močerad CT - Seznam živil</h1>
       <div>
         <span>Pozdravljeni, {username || session.user.email}</span>
-        <button onClick={handleLogout} style={{marginLeft: '10px'}}>Odjava</button>
         <button onClick={() => setShowProfile(true)} style={{ marginLeft: '10px'}}>Profil</button>
+        <button onClick={() => setShowDashboard(true)} style={{marginLeft: '10px'}}>Dashboard</button>
+        <button onClick={handleLogout} style={{marginLeft: '10px'}}>Odjava</button>
       </div>
       </div>
       <input type='text' placeholder='Išči živilo...' value={search} onChange={e => setSearch(e.target.value)} style={{padding: '8px', width: '300px', marginBottom: '20px'}}/>
