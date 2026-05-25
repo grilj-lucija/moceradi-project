@@ -30,7 +30,7 @@ function Dashboard({ session}){
     // graf kalorij po aktivnostih 
     const caloriesData = activities.map(a => ({
         name: new Date(a.started_at).toLocaleDateString('sl-SI'),
-        razdalja: Math.round(a.calories_kcal || 0)
+        kalorije: Math.round(a.calories_kcal || 0)
     }));
 
     // graf razdalje 
