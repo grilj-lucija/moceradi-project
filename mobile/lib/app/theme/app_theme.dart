@@ -8,14 +8,17 @@ import 'package:health_app/app/theme/app_typography.dart';
 class AppTheme {
   const AppTheme._();
 
-  static ThemeData dark() {
-    const colors = AppColors.dark;
+  static ThemeData dark() => _build(AppColors.dark, Brightness.dark);
+
+  static ThemeData light() => _build(AppColors.light, Brightness.light);
+
+  static ThemeData _build(AppColors colors, Brightness brightness) {
     final typography = AppTypography.fromGoogleFonts(colors.onSurface);
     const spacing = AppSpacing();
     const radius = AppRadius();
 
     final scheme = ColorScheme(
-      brightness: Brightness.dark,
+      brightness: brightness,
       primary: colors.primary,
       onPrimary: colors.onPrimary,
       primaryContainer: colors.primaryContainer,
@@ -57,7 +60,7 @@ class AppTheme {
 
     return ThemeData(
       useMaterial3: true,
-      brightness: Brightness.dark,
+      brightness: brightness,
       colorScheme: scheme,
       scaffoldBackgroundColor: colors.background,
       canvasColor: colors.background,
@@ -69,7 +72,9 @@ class AppTheme {
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
-        systemOverlayStyle: SystemUiOverlayStyle.light,
+        systemOverlayStyle: brightness == Brightness.dark
+            ? SystemUiOverlayStyle.light
+            : SystemUiOverlayStyle.dark,
         titleTextStyle: typography.titleMd,
       ),
       cardTheme: CardThemeData(
@@ -119,7 +124,7 @@ class AppTheme {
         linearTrackColor: colors.surfaceContainerHigh,
       ),
       extensions: <ThemeExtension<dynamic>>[
-        AppColors.dark,
+        colors,
         typography,
         spacing,
         radius,

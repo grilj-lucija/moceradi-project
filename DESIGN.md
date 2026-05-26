@@ -48,6 +48,40 @@ colors:
   background: '#10141a'
   on-background: '#dfe2eb'
   surface-variant: '#31353c'
+colors-light:
+  surface: '#f7f8fb'
+  surface-dim: '#e2e6ef'
+  surface-bright: '#ffffff'
+  surface-container-lowest: '#ffffff'
+  surface-container-low: '#f1f3f8'
+  surface-container: '#ebeef4'
+  surface-container-high: '#e2e6ef'
+  surface-container-highest: '#d8dce6'
+  on-surface: '#10141a'
+  on-surface-variant: '#4a5060'
+  outline: '#6a7080'
+  outline-variant: '#c8cdd8'
+  primary: '#005bc1'
+  on-primary: '#ffffff'
+  primary-container: '#d8e2ff'
+  on-primary-container: '#001a41'
+  secondary: '#006874'
+  on-secondary: '#ffffff'
+  secondary-container: '#9cf0ff'
+  on-secondary-container: '#001f24'
+  tertiary: '#3631b4'
+  on-tertiary: '#ffffff'
+  tertiary-container: '#e2dfff'
+  on-tertiary-container: '#0c006a'
+  error: '#ba1a1a'
+  on-error: '#ffffff'
+  error-container: '#ffdad6'
+  on-error-container: '#410002'
+  background: '#f7f8fb'
+  on-background: '#10141a'
+  velocity-blue: '#007aff'
+  endurance-cyan: '#00b8d4'
+  ghost-border: 'rgba(10,14,20,0.12)'
 typography:
   display-lg:
     fontFamily: Plus Jakarta Sans
@@ -125,6 +159,16 @@ The palette is anchored by **Deep Navy (#0A0E14)**, which provides a more sophis
 - **Endurance Cyan (#00E5FF):** Used for secondary metrics (e.g., cadence, elevation gain) and interactive elements that require high visibility.
 - **Surface Strategy:** We use a "tiered navy" approach. Surfaces closer to the user are lighter and more desaturated blue, creating a sense of natural depth without relying on traditional shadows.
 - **Gradients:** Use subtle linear gradients (Velocity Blue to Endurance Cyan) specifically for "Active State" or "Session in Progress" headers to evoke a sense of motion.
+
+### Light Theme
+
+The light theme mirrors the dark token names 1:1 (see `colors-light` above) so swapping themes is a pure token flip. Brand accents stay anchored to the same blues; only the surface tiers and on-surface tones invert.
+
+- **Surface Anchor:** **Warm Off-White (#F7F8FB)** — never pure white. Keeps the calm, premium tone that pure white loses. Surface tiers step up to brighter neutrals as elevation increases (`surface-container-lowest = #FFFFFF`).
+- **Text Anchor:** The dark theme's background **Deep Navy (#10141A)** is reused as the on-surface color, creating a deliberate inversion and visual continuity between the two modes.
+- **Brand Accents:** **Velocity Blue (#007AFF)** is unchanged. **Endurance Cyan** shifts to **#00B8D4** in light mode — slightly darkened so it retains pop on bright surfaces without losing saturation.
+- **Primary:** Shifts from `#ADC6FF` (dark) to `#005BC1` (light) to maintain contrast on bright surfaces.
+- **Ghost Borders:** Inverted from white-at-10% to navy-at-12% (`rgba(10,14,20,0.12)`) — same visual weight, different polarity.
 
 ## Typography
 

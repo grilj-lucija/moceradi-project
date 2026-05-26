@@ -36,6 +36,10 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.velocityBlue,
     required this.enduranceCyan,
     required this.ghostBorder,
+    required this.chartProtein,
+    required this.chartCarbs,
+    required this.chartFat,
+    required this.chartSnack,
   });
 
   static const AppColors dark = AppColors(
@@ -72,6 +76,50 @@ class AppColors extends ThemeExtension<AppColors> {
     velocityBlue: Color(0xFF007AFF),
     enduranceCyan: Color(0xFF00E5FF),
     ghostBorder: Color(0x1AFFFFFF),
+    chartProtein: Color(0xFF00E5FF),
+    chartCarbs: Color(0xFF4B8EFF),
+    chartFat: Color(0xFFC2C1FF),
+    chartSnack: Color(0xFFFFB088),
+  );
+
+  static const AppColors light = AppColors(
+    surface: Color(0xFFF7F8FB),
+    surfaceDim: Color(0xFFE2E6EF),
+    surfaceBright: Color(0xFFFFFFFF),
+    surfaceContainerLowest: Color(0xFFFFFFFF),
+    surfaceContainerLow: Color(0xFFF1F3F8),
+    surfaceContainer: Color(0xFFEBEEF4),
+    surfaceContainerHigh: Color(0xFFE2E6EF),
+    surfaceContainerHighest: Color(0xFFD8DCE6),
+    onSurface: Color(0xFF10141A),
+    onSurfaceVariant: Color(0xFF4A5060),
+    outline: Color(0xFF6A7080),
+    outlineVariant: Color(0xFFC8CDD8),
+    primary: Color(0xFF007AFF),
+    onPrimary: Color(0xFFFFFFFF),
+    primaryContainer: Color(0xFFD8E2FF),
+    onPrimaryContainer: Color(0xFF001A41),
+    secondary: Color(0xFF006874),
+    onSecondary: Color(0xFFFFFFFF),
+    secondaryContainer: Color(0xFF9CF0FF),
+    onSecondaryContainer: Color(0xFF001F24),
+    tertiary: Color(0xFF3631B4),
+    onTertiary: Color(0xFFFFFFFF),
+    tertiaryContainer: Color(0xFFE2DFFF),
+    onTertiaryContainer: Color(0xFF0C006A),
+    error: Color(0xFFBA1A1A),
+    onError: Color(0xFFFFFFFF),
+    errorContainer: Color(0xFFFFDAD6),
+    onErrorContainer: Color(0xFF410002),
+    background: Color(0xFFF7F8FB),
+    onBackground: Color(0xFF10141A),
+    velocityBlue: Color(0xFF007AFF),
+    enduranceCyan: Color(0xFF007AFF),
+    ghostBorder: Color(0x1F0A0E14),
+    chartProtein: Color(0xFF00A39A),
+    chartCarbs: Color(0xFF007AFF),
+    chartFat: Color(0xFF6750A4),
+    chartSnack: Color(0xFFE07A2F),
   );
 
   final Color surface;
@@ -107,6 +155,10 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color velocityBlue;
   final Color enduranceCyan;
   final Color ghostBorder;
+  final Color chartProtein;
+  final Color chartCarbs;
+  final Color chartFat;
+  final Color chartSnack;
 
   LinearGradient get primaryGradient => LinearGradient(
         colors: [velocityBlue, enduranceCyan],

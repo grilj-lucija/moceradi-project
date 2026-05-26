@@ -16,7 +16,9 @@ import 'package:health_app/features/profile/presentation/widgets/profile_banner.
 import 'package:health_app/features/profile/presentation/widgets/profile_stats_strip.dart';
 import 'package:health_app/features/profile/presentation/widgets/weekly_compact_card.dart';
 import 'package:health_app/features/profile/presentation/widgets/weight_progress_card.dart';
+import 'package:health_app/features/settings/presentation/widgets/theme_picker_sheet.dart';
 import 'package:health_app/features/weight/presentation/widgets/log_weight_pill.dart';
+import 'package:health_app/shared/widgets/buttons/glass_icon_button.dart';
 
 class ProfilePage extends ConsumerWidget {
   const ProfilePage({super.key});
@@ -117,7 +119,25 @@ class _Body extends ConsumerWidget {
           left: 8,
           child: const ProfileBackButton(),
         ),
+        Positioned(
+          top: mediaTop + 8,
+          right: 8,
+          child: const _ThemeButton(),
+        ),
       ],
+    );
+  }
+}
+
+class _ThemeButton extends StatelessWidget {
+  const _ThemeButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassIconButton(
+      icon: Icons.brightness_6_outlined,
+      tooltip: 'Appearance',
+      onPressed: () => ThemePickerSheet.show(context),
     );
   }
 }
@@ -162,8 +182,17 @@ class _AvatarFrame extends StatelessWidget {
     final colors = context.colors;
     final typography = context.typography;
     final radius = context.radius;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final image = _resolveImage();
+
+    final fillColor = isDark
+        ? Colors.white.withValues(alpha: 0.14)
+        : Colors.white.withValues(alpha: 0.45);
+    final borderColor = isDark
+        ? Colors.white.withValues(alpha: 0.28)
+        : Colors.white.withValues(alpha: 0.7);
+    final initialsColor = isDark ? Colors.white : colors.onSurface;
 
     final body = ClipOval(
       child: BackdropFilter(
@@ -173,23 +202,18 @@ class _AvatarFrame extends StatelessWidget {
           height: _diameter,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: image == null
-                ? colors.surfaceContainerHigh.withValues(alpha: 0.6)
-                : null,
+            color: image == null ? fillColor : null,
             image: image == null
                 ? null
                 : DecorationImage(image: image, fit: BoxFit.cover),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.22),
-              width: 1.2,
-            ),
+            border: Border.all(color: borderColor, width: 1.2),
           ),
           alignment: Alignment.center,
           child: image == null
               ? Text(
                   _initials(),
                   style: typography.headlineLgMobile.copyWith(
-                    color: Colors.white,
+                    color: initialsColor,
                     fontWeight: FontWeight.w600,
                   ),
                 )
