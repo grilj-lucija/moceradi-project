@@ -5,7 +5,6 @@ import 'package:health_app/app/router.dart';
 import 'package:health_app/app/theme/app_theme.dart';
 import 'package:health_app/features/workout/domain/workout_session.dart';
 import 'package:health_app/features/workout/presentation/providers/workout_controller.dart';
-import 'package:health_app/shared/widgets/layout/page_header.dart';
 
 class SelectActivityPage extends ConsumerWidget {
   const SelectActivityPage({super.key});
@@ -16,39 +15,40 @@ class SelectActivityPage extends ConsumerWidget {
     final typography = context.typography;
     final spacing = context.spacing;
 
-    return ListView(
-      padding: EdgeInsets.fromLTRB(
-        spacing.containerMarginMobile,
-        spacing.stackLg,
-        spacing.containerMarginMobile,
-        spacing.sectionGap + 80,
+    return Scaffold(
+      appBar: AppBar(title: const Text('Start a workout')),
+      body: ListView(
+        padding: EdgeInsets.fromLTRB(
+          spacing.containerMarginMobile,
+          spacing.stackLg,
+          spacing.containerMarginMobile,
+          spacing.sectionGap,
+        ),
+        children: [
+          Text(
+            'Pick an activity. We will track your route, pace, and calories.',
+            style: typography.bodyMd.copyWith(color: colors.onSurfaceVariant),
+          ),
+          SizedBox(height: spacing.stackLg),
+          _ActivityCard(
+            type: ActivityType.walking,
+            caption: 'A casual stroll. Steady pace, low intensity.',
+            onTap: () => _start(context, ref, ActivityType.walking),
+          ),
+          SizedBox(height: spacing.stackMd),
+          _ActivityCard(
+            type: ActivityType.running,
+            caption: 'Push your pace. Higher MET, more calories.',
+            onTap: () => _start(context, ref, ActivityType.running),
+          ),
+          SizedBox(height: spacing.stackMd),
+          _ActivityCard(
+            type: ActivityType.cycling,
+            caption: 'On the bike. Distance over time, lower impact.',
+            onTap: () => _start(context, ref, ActivityType.cycling),
+          ),
+        ],
       ),
-      children: [
-        const PageHeader(eyebrow: 'New workout', title: 'Start a workout'),
-        SizedBox(height: spacing.stackSm),
-        Text(
-          'Pick an activity. We will track your route, pace, and calories.',
-          style: typography.bodyMd.copyWith(color: colors.onSurfaceVariant),
-        ),
-        SizedBox(height: spacing.stackLg),
-        _ActivityCard(
-          type: ActivityType.walking,
-          caption: 'A casual stroll. Steady pace, low intensity.',
-          onTap: () => _start(context, ref, ActivityType.walking),
-        ),
-        SizedBox(height: spacing.stackMd),
-        _ActivityCard(
-          type: ActivityType.running,
-          caption: 'Push your pace. Higher MET, more calories.',
-          onTap: () => _start(context, ref, ActivityType.running),
-        ),
-        SizedBox(height: spacing.stackMd),
-        _ActivityCard(
-          type: ActivityType.cycling,
-          caption: 'On the bike. Distance over time, lower impact.',
-          onTap: () => _start(context, ref, ActivityType.cycling),
-        ),
-      ],
     );
   }
 
