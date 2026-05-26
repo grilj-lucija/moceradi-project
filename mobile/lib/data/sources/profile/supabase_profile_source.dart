@@ -61,6 +61,8 @@ class SupabaseProfileSource implements ProfileSource {
     DateTime? dateOfBirth,
     double? heightCm,
     double? weightKg,
+    ActivityLevel? activityLevel,
+    double? targetWeightKg,
     bool markOnboarded = false,
   }) async {
     final uid = _uid;
@@ -76,6 +78,8 @@ class SupabaseProfileSource implements ProfileSource {
       'date_of_birth': ?dateOfBirth?.toIso8601String().split('T').first,
       'height_cm': ?heightCm,
       'weight_kg': ?weightKg,
+      'activity_level': ?activityLevel?.wireValue,
+      'target_weight_kg': ?targetWeightKg,
       if (markOnboarded) 'onboarded_at': DateTime.now().toIso8601String(),
     };
 
