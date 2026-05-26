@@ -106,12 +106,49 @@ class MockNutritionLogSource implements NutritionLogSource {
   }
 
   @override
+  Future<FoodEntry> updateEntry(
+    String id, {
+    double? grams,
+    MealSlot? mealSlot,
+  }) async {
+    for (final list in _entriesByDate.values) {
+      final i = list.indexWhere((e) => e.id == id);
+      if (i == -1) continue;
+      final current = list[i];
+      final updated = FoodEntry(
+        id: current.id,
+        foodSnapshot: current.foodSnapshot,
+        grams: grams ?? current.grams,
+        loggedAt: current.loggedAt,
+        mealSlot: mealSlot ?? current.mealSlot,
+      );
+      list[i] = updated;
+      return updated;
+    }
+    throw StateError('Entry not found: $id');
+  }
+
+  @override
   Future<void> removeEntry(String id) async {
     for (final list in _entriesByDate.values) {
       list.removeWhere((e) => e.id == id);
     }
   }
 
+  DailyNutritionGoal _goal = kDefaultDailyGoal;
+
   @override
-  Future<DailyNutritionGoal> getDailyGoal() async => kDefaultDailyGoal;
+  Future<DailyNutritionGoal> getDailyGoal() async => _goal;
+
+  @override
+  Future<DailyNutritionGoal> updateDailyKcal(double kcal) async {
+    return _goal = DailyNutritionGoal(
+      kcal: kcal,
+      proteinGrams: _goal.proteinGrams,
+      carbsGrams: _goal.carbsGrams,
+      fatGrams: _goal.fatGrams,
+      sugarGrams: _goal.sugarGrams,
+      liquidsMl: _goal.liquidsMl,
+    );
+  }
 }

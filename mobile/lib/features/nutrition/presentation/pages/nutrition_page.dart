@@ -3,12 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:health_app/app/router.dart';
 import 'package:health_app/app/theme/app_theme.dart';
-import 'package:health_app/data/models/meal_slot.dart';
 import 'package:health_app/features/nutrition/presentation/providers/daily_nutrition_controller.dart';
 import 'package:health_app/features/nutrition/presentation/widgets/calorie_ring.dart';
 import 'package:health_app/features/nutrition/presentation/widgets/liquids_card.dart';
+import 'package:health_app/features/nutrition/presentation/widgets/logged_food_list.dart';
 import 'package:health_app/features/nutrition/presentation/widgets/macro_bar.dart';
-import 'package:health_app/features/nutrition/presentation/widgets/meal_section.dart';
+import 'package:health_app/features/nutrition/presentation/widgets/meal_breakdown_bar.dart';
 import 'package:health_app/shared/widgets/buttons/floating_action_pill.dart';
 import 'package:health_app/shared/widgets/cards/glass_card.dart';
 import 'package:health_app/shared/widgets/layout/page_header.dart';
@@ -59,7 +59,7 @@ class NutritionPage extends ConsumerWidget {
                 ),
                 data: (data) {
                   final totals = data.totals;
-                  final byMeal = data.entriesByMeal;
+                  final isToday = _isSameDay(data.date, _today());
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -85,18 +85,13 @@ class NutritionPage extends ConsumerWidget {
                         consumedMl: data.liquidsMl,
                         goalMl: data.goal.liquidsMl,
                       ),
+                      SizedBox(height: spacing.stackMd),
+                      MealBreakdownBar(entries: data.entries),
                       SizedBox(height: spacing.stackLg),
-                      for (var i = 0; i < MealSlot.values.length; i++) ...[
-                        MealSection(
-                          slot: MealSlot.values[i],
-                          entries: byMeal[MealSlot.values[i]] ?? const [],
-                          onRemove: (entry) async {
-                            await notifier.removeEntry(entry.id);
-                          },
-                        ),
-                        if (i < MealSlot.values.length - 1)
-                          SizedBox(height: spacing.stackMd),
-                      ],
+                      LoggedFoodList(
+                        entries: data.entries,
+                        allowEdit: isToday,
+                      ),
                     ],
                   );
                 },
@@ -118,12 +113,11 @@ class NutritionPage extends ConsumerWidget {
     return DateTime(now.year, now.month, now.day);
   }
 
+  static bool _isSameDay(DateTime a, DateTime b) =>
+      a.year == b.year && a.month == b.month && a.day == b.day;
+
   static String _eyebrowFor(DateTime date) {
-    final today = _today();
-    final diff = date.difference(today).inDays;
-    if (diff == 0) return 'Today · ${DateFormat('MMM d').format(date)}';
-    if (diff == -1) return 'Yesterday · ${DateFormat('MMM d').format(date)}';
-    return DateFormat('EEE · MMM d').format(date);
+    return DateFormat('EEE, MMM d').format(date).toUpperCase();
   }
 }
 
