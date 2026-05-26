@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -14,7 +16,6 @@ import 'package:health_app/features/profile/presentation/widgets/profile_banner.
 import 'package:health_app/features/profile/presentation/widgets/profile_stats_strip.dart';
 import 'package:health_app/features/profile/presentation/widgets/weekly_compact_card.dart';
 import 'package:health_app/features/profile/presentation/widgets/weight_progress_card.dart';
-import 'package:health_app/shared/widgets/avatars/profile_avatar.dart';
 
 class ProfilePage extends ConsumerWidget {
   const ProfilePage({super.key});
@@ -123,22 +124,84 @@ class _AvatarFrame extends StatelessWidget {
 
   final Profile? profile;
 
+  static const double _diameter = 120;
+
+  String _initials() {
+    final name = (profile?.presentationName ?? 'Athlete').trim();
+    if (name.isEmpty) return '?';
+    final parts = name.split(RegExp(r'\s+'));
+    if (parts.length == 1) {
+      return parts.first.characters.first.toUpperCase();
+    }
+    final a = parts.first.characters.first;
+    final b = parts.last.characters.first;
+    return '$a$b'.toUpperCase();
+  }
+
+  ImageProvider? _resolveImage() {
+    final url = profile?.avatarUrl;
+    if (url == null || url.isEmpty) return null;
+    if (url.startsWith('data:')) {
+      final commaIndex = url.indexOf(',');
+      if (commaIndex == -1) return null;
+      try {
+        final bytes = base64Decode(url.substring(commaIndex + 1));
+        return MemoryImage(bytes);
+      } on FormatException {
+        return null;
+      }
+    }
+    return NetworkImage(url);
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: colors.background,
+    final typography = context.typography;
+    final radius = context.radius;
+
+    final image = _resolveImage();
+
+    final body = ClipOval(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+        child: Container(
+          width: _diameter,
+          height: _diameter,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: image == null
+                ? colors.surfaceContainerHigh.withValues(alpha: 0.6)
+                : null,
+            image: image == null
+                ? null
+                : DecorationImage(image: image, fit: BoxFit.cover),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.22),
+              width: 1.2,
+            ),
+          ),
+          alignment: Alignment.center,
+          child: image == null
+              ? Text(
+                  _initials(),
+                  style: typography.headlineLgMobile.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                )
+              : null,
+        ),
       ),
-      child: ProfileAvatar(
-        name: profile?.presentationName ?? 'Athlete',
-        avatarUrl: profile?.avatarUrl,
-        size: ProfileAvatarSize.xl,
-        borderColor: colors.enduranceCyan.withValues(alpha: 0.6),
-        borderWidth: 2,
+    );
+
+    return Material(
+      color: Colors.transparent,
+      borderRadius: radius.pill,
+      child: InkWell(
         onTap: () => context.push(AppRoutes.editProfile),
+        borderRadius: radius.pill,
+        child: body,
       ),
     );
   }
