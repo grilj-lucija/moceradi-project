@@ -6,6 +6,7 @@ import 'package:health_app/data/repositories/foods_repository_impl.dart';
 import 'package:health_app/data/repositories/nutrition_log_repository_impl.dart';
 import 'package:health_app/data/repositories/profile_repository_impl.dart';
 import 'package:health_app/data/repositories/user_goals_repository_impl.dart';
+import 'package:health_app/data/repositories/weight_repository_impl.dart';
 import 'package:health_app/data/sources/activities/activities_source.dart';
 import 'package:health_app/data/sources/activities/mock_activities_source.dart';
 import 'package:health_app/data/sources/activities/supabase_activities_source.dart';
@@ -28,12 +29,16 @@ import 'package:health_app/data/sources/profile/supabase_profile_source.dart';
 import 'package:health_app/data/sources/user_goals/mock_user_goals_source.dart';
 import 'package:health_app/data/sources/user_goals/supabase_user_goals_source.dart';
 import 'package:health_app/data/sources/user_goals/user_goals_source.dart';
+import 'package:health_app/data/sources/weights/mock_weight_source.dart';
+import 'package:health_app/data/sources/weights/supabase_weight_source.dart';
+import 'package:health_app/data/sources/weights/weight_source.dart';
 import 'package:health_app/domain/repositories/activities_repository.dart';
 import 'package:health_app/domain/repositories/auth_repository.dart';
 import 'package:health_app/domain/repositories/foods_repository.dart';
 import 'package:health_app/domain/repositories/nutrition_log_repository.dart';
 import 'package:health_app/domain/repositories/profile_repository.dart';
 import 'package:health_app/domain/repositories/user_goals_repository.dart';
+import 'package:health_app/domain/repositories/weight_repository.dart';
 import 'package:health_app/features/workout/services/location_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -122,4 +127,15 @@ final foodsRepositoryProvider = Provider<FoodsRepository>((ref) {
 
 final nutritionLogRepositoryProvider = Provider<NutritionLogRepository>((ref) {
   return NutritionLogRepositoryImpl(ref.watch(nutritionLogSourceProvider));
+});
+
+final weightSourceProvider = Provider<WeightSource>((ref) {
+  if (Env.useMockData || !Env.isSupabaseConfigured) {
+    return MockWeightSource();
+  }
+  return SupabaseWeightSource(ref.watch(supabaseClientProvider));
+});
+
+final weightRepositoryProvider = Provider<WeightRepository>((ref) {
+  return WeightRepositoryImpl(ref.watch(weightSourceProvider));
 });

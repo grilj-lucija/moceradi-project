@@ -234,6 +234,11 @@ class OnboardingController extends Notifier<OnboardingFormState> {
           .updateDailyKcal(kcal.roundToDouble());
     }
 
+    final weight = form.weightKg;
+    if (weight != null) {
+      await ref.read(weightRepositoryProvider).logCurrentWeek(weight);
+    }
+
     state = state.copyWith(isSubmitting: false);
     ref
       ..invalidate(currentProfileProvider)

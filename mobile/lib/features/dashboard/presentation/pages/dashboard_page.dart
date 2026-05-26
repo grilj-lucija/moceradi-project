@@ -11,6 +11,8 @@ import 'package:health_app/features/dashboard/presentation/widgets/activity_card
 import 'package:health_app/features/dashboard/presentation/widgets/daily_energy_hero.dart';
 import 'package:health_app/features/dashboard/presentation/widgets/today_stats_row.dart';
 import 'package:health_app/features/dashboard/presentation/widgets/weekly_activity_goal_card.dart';
+import 'package:health_app/features/weight/presentation/providers/weight_controller.dart';
+import 'package:health_app/features/weight/presentation/widgets/weekly_weight_reminder_card.dart';
 import 'package:health_app/shared/widgets/layout/page_header.dart';
 import 'package:intl/intl.dart';
 
@@ -42,6 +44,7 @@ class DashboardPage extends ConsumerWidget {
         children: [
           PageHeader(eyebrow: dateLine, title: title),
           SizedBox(height: spacing.stackLg),
+          const _WeightReminderSlot(),
           const DailyEnergyHero(),
           SizedBox(height: spacing.stackLg),
           const WeeklyActivityGoalCard(),
@@ -96,6 +99,25 @@ class DashboardPage extends ConsumerWidget {
     if (hour < 17) return 'Good afternoon';
     if (hour < 22) return 'Good evening';
     return 'Good night';
+  }
+}
+
+class _WeightReminderSlot extends ConsumerWidget {
+  const _WeightReminderSlot();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final spacing = context.spacing;
+    final entry = ref.watch(currentWeekWeightProvider);
+    final shouldShow = entry.maybeWhen(
+      data: (value) => value == null,
+      orElse: () => false,
+    );
+    if (!shouldShow) return const SizedBox.shrink();
+    return Padding(
+      padding: EdgeInsets.only(bottom: spacing.stackLg),
+      child: const WeeklyWeightReminderCard(),
+    );
   }
 }
 

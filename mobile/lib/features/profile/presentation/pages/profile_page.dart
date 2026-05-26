@@ -16,6 +16,7 @@ import 'package:health_app/features/profile/presentation/widgets/profile_banner.
 import 'package:health_app/features/profile/presentation/widgets/profile_stats_strip.dart';
 import 'package:health_app/features/profile/presentation/widgets/weekly_compact_card.dart';
 import 'package:health_app/features/profile/presentation/widgets/weight_progress_card.dart';
+import 'package:health_app/features/weight/presentation/widgets/log_weight_pill.dart';
 
 class ProfilePage extends ConsumerWidget {
   const ProfilePage({super.key});
@@ -103,6 +104,8 @@ class _Body extends ConsumerWidget {
               ),
               child: WeightProgressCard(profile: profile),
             ),
+            SizedBox(height: spacing.stackMd),
+            const Center(child: LogWeightPill()),
             SizedBox(height: spacing.sectionGap),
             const AchievementsStrip(),
             SizedBox(height: spacing.sectionGap),
