@@ -100,6 +100,25 @@ class DailyNutritionController extends AsyncNotifier<DailyNutritionState> {
     );
   }
 
+  Future<Failure?> updateEntry(
+    String id, {
+    double? grams,
+    MealSlot? mealSlot,
+  }) async {
+    final result = await ref.read(nutritionLogRepositoryProvider).updateEntry(
+          id,
+          grams: grams,
+          mealSlot: mealSlot,
+        );
+    return result.fold(
+      ok: (_) async {
+        await refresh();
+        return null;
+      },
+      err: (failure) => failure,
+    );
+  }
+
   Future<Failure?> removeEntry(String id) async {
     final result =
         await ref.read(nutritionLogRepositoryProvider).removeEntry(id);
