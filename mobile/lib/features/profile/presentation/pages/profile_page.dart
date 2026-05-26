@@ -4,6 +4,7 @@ import 'package:health_app/app/theme/app_theme.dart';
 import 'package:health_app/data/models/profile.dart';
 import 'package:health_app/features/auth/presentation/providers/auth_controller.dart';
 import 'package:health_app/features/auth/presentation/providers/profile_provider.dart';
+import 'package:health_app/features/profile/presentation/widgets/goals_section.dart';
 import 'package:health_app/shared/widgets/buttons/ghost_button.dart';
 import 'package:health_app/shared/widgets/cards/glass_card.dart';
 import 'package:health_app/shared/widgets/cards/metric_tile.dart';
@@ -148,6 +149,8 @@ class _ProfileBody extends StatelessWidget {
             ),
           ],
         ),
+        SizedBox(height: spacing.sectionGap),
+        GoalsSection(profile: profile),
       ],
     );
   }

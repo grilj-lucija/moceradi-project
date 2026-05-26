@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:health_app/app/home_shell.dart';
 import 'package:health_app/data/models/activity.dart';
 import 'package:health_app/data/models/food.dart';
+import 'package:health_app/features/activities/presentation/pages/activities_page.dart';
 import 'package:health_app/features/auth/presentation/pages/login_page.dart';
 import 'package:health_app/features/auth/presentation/pages/register_page.dart';
 import 'package:health_app/features/auth/presentation/providers/auth_controller.dart';
@@ -21,6 +22,7 @@ import 'package:health_app/features/nutrition/presentation/pages/photo_capture_p
 import 'package:health_app/features/nutrition/presentation/pages/recipe_form_page.dart';
 import 'package:health_app/features/nutrition/presentation/pages/recipes_page.dart';
 import 'package:health_app/features/onboarding/presentation/pages/onboarding_page.dart';
+import 'package:health_app/features/profile/presentation/pages/edit_goals_page.dart';
 import 'package:health_app/features/profile/presentation/pages/profile_page.dart';
 import 'package:health_app/features/workout/presentation/pages/active_workout_page.dart';
 import 'package:health_app/features/workout/presentation/pages/select_activity_page.dart';
@@ -45,7 +47,9 @@ class AppRoutes {
   static const nutritionRecipes = '/nutrition/recipes';
   static const nutritionRecipeNew = '/nutrition/recipes/new';
   static const activityDetail = '/activity';
+  static const activitiesAll = '/activities/all';
   static const profile = '/profile';
+  static const editGoals = '/profile/goals';
   static const workoutActive = '/workout/active';
   static const workoutSummary = '/workout/summary';
 
@@ -123,6 +127,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const ProfilePage(),
       ),
       GoRoute(
+        path: AppRoutes.editGoals,
+        parentNavigatorKey: navKey,
+        builder: (context, state) => const EditGoalsPage(),
+      ),
+      GoRoute(
         path: AppRoutes.nutritionAdd,
         parentNavigatorKey: navKey,
         builder: (context, state) => const AddFoodPage(),
@@ -195,6 +204,11 @@ final routerProvider = Provider<GoRouter>((ref) {
           }
           return ActivityDetailPage(activity: activity);
         },
+      ),
+      GoRoute(
+        path: AppRoutes.activitiesAll,
+        parentNavigatorKey: navKey,
+        builder: (context, state) => const ActivitiesPage(),
       ),
       StatefulShellRoute.indexedStack(
         parentNavigatorKey: navKey,
