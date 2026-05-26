@@ -47,6 +47,11 @@ final todayActivityStatsProvider = Provider<TodayActivityStats>((ref) {
   return ActivityProgress.todayStats(activities, DateTime.now());
 });
 
+final dailyStreakProvider = Provider<int>((ref) {
+  final activities = ref.watch(recentActivitiesProvider).value ?? const [];
+  return ActivityProgress.currentDailyStreak(activities, DateTime.now());
+});
+
 final weeklyCaloriesPerDayProvider = Provider<List<double>>((ref) {
   final activities = ref.watch(recentActivitiesProvider).value ?? const [];
   final weekStart = ActivityProgress.startOfWeek(DateTime.now());

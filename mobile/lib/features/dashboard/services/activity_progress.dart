@@ -111,6 +111,27 @@ class ActivityProgress {
     return values;
   }
 
+  static int currentDailyStreak(List<Activity> all, DateTime now) {
+    if (all.isEmpty) return 0;
+    final days = <DateTime>{};
+    for (final a in all) {
+      final local = a.startedAt.toLocal();
+      days.add(DateTime(local.year, local.month, local.day));
+    }
+    var anchor = startOfDay(now);
+    if (!days.contains(anchor)) {
+      anchor = anchor.subtract(const Duration(days: 1));
+      if (!days.contains(anchor)) return 0;
+    }
+    var streak = 0;
+    var cursor = anchor;
+    while (days.contains(cursor)) {
+      streak += 1;
+      cursor = cursor.subtract(const Duration(days: 1));
+    }
+    return streak;
+  }
+
   static TodayActivityStats todayStats(List<Activity> all, DateTime now) {
     final today = filterSince(all, startOfDay(now));
     return TodayActivityStats(

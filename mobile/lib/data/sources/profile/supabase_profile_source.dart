@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:health_app/data/models/profile.dart';
 import 'package:health_app/data/sources/profile/profile_source.dart';
@@ -18,6 +19,7 @@ class SupabaseProfileSource implements ProfileSource {
   final SupabaseClient _client;
 
   static const _table = 'profiles';
+  static const _avatarBucket = 'avatars';
 
   String? get _uid => _client.auth.currentUser?.id;
 
@@ -63,6 +65,7 @@ class SupabaseProfileSource implements ProfileSource {
     double? weightKg,
     ActivityLevel? activityLevel,
     double? targetWeightKg,
+    String? avatarUrl,
     bool markOnboarded = false,
   }) async {
     final uid = _uid;
@@ -80,6 +83,7 @@ class SupabaseProfileSource implements ProfileSource {
       'weight_kg': ?weightKg,
       'activity_level': ?activityLevel?.wireValue,
       'target_weight_kg': ?targetWeightKg,
+      'avatar_url': ?avatarUrl,
       if (markOnboarded) 'onboarded_at': DateTime.now().toIso8601String(),
     };
 
@@ -96,5 +100,41 @@ class SupabaseProfileSource implements ProfileSource {
       }
       rethrow;
     }
+  }
+
+  @override
+  Future<bool> isUsernameAvailable(String username) async {
+    final result = await _client.rpc<bool>(
+      'is_username_available',
+      params: {'p_username': username},
+    );
+    return result;
+  }
+
+  @override
+  Future<String> uploadAvatar({
+    required Uint8List bytes,
+    required String contentType,
+    required String fileExtension,
+  }) async {
+    final uid = _uid;
+    if (uid == null) {
+      throw const AuthException('Not signed in');
+    }
+
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final path = '$uid/avatar_$timestamp.$fileExtension';
+
+    await _client.storage.from(_avatarBucket).uploadBinary(
+          path,
+          bytes,
+          fileOptions: FileOptions(
+            contentType: contentType,
+            upsert: true,
+            cacheControl: '3600',
+          ),
+        );
+
+    return _client.storage.from(_avatarBucket).getPublicUrl(path);
   }
 }

@@ -67,6 +67,7 @@ class Profile extends Equatable {
     this.onboardedAt,
     this.activityLevel,
     this.targetWeightKg,
+    this.avatarUrl,
   });
 
   factory Profile.fromJson(Map<String, dynamic> json) => Profile(
@@ -88,6 +89,7 @@ class Profile extends Equatable {
         activityLevel:
             ActivityLevelX.fromWire(json['activity_level'] as String?),
         targetWeightKg: (json['target_weight_kg'] as num?)?.toDouble(),
+        avatarUrl: json['avatar_url'] as String?,
       );
 
   final String id;
@@ -103,6 +105,7 @@ class Profile extends Equatable {
   final DateTime updatedAt;
   final ActivityLevel? activityLevel;
   final double? targetWeightKg;
+  final String? avatarUrl;
 
   bool get isOnboarded => onboardedAt != null;
 
@@ -136,6 +139,7 @@ class Profile extends Equatable {
         'updated_at': updatedAt.toIso8601String(),
         'activity_level': activityLevel?.wireValue,
         'target_weight_kg': targetWeightKg,
+        'avatar_url': avatarUrl,
       };
 
   Profile copyWith({
@@ -150,6 +154,7 @@ class Profile extends Equatable {
     DateTime? updatedAt,
     ActivityLevel? activityLevel,
     double? targetWeightKg,
+    String? avatarUrl,
   }) =>
       Profile(
         id: id,
@@ -165,6 +170,7 @@ class Profile extends Equatable {
         updatedAt: updatedAt ?? this.updatedAt,
         activityLevel: activityLevel ?? this.activityLevel,
         targetWeightKg: targetWeightKg ?? this.targetWeightKg,
+        avatarUrl: avatarUrl ?? this.avatarUrl,
       );
 
   @override
@@ -182,5 +188,6 @@ class Profile extends Equatable {
         updatedAt,
         activityLevel,
         targetWeightKg,
+        avatarUrl,
       ];
 }
