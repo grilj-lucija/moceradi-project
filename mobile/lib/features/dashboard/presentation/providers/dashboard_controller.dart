@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:health_app/core/errors/failures.dart';
 import 'package:health_app/data/models/activity.dart';
+import 'package:health_app/data/models/user_goals.dart';
 import 'package:health_app/di/providers.dart';
 import 'package:health_app/features/auth/presentation/providers/user_goals_provider.dart';
 import 'package:health_app/features/dashboard/services/activity_progress.dart';
@@ -44,4 +45,14 @@ final weeklyActivityProgressProvider =
 final todayActivityStatsProvider = Provider<TodayActivityStats>((ref) {
   final activities = ref.watch(recentActivitiesProvider).value ?? const [];
   return ActivityProgress.todayStats(activities, DateTime.now());
+});
+
+final weeklyCaloriesPerDayProvider = Provider<List<double>>((ref) {
+  final activities = ref.watch(recentActivitiesProvider).value ?? const [];
+  final weekStart = ActivityProgress.startOfWeek(DateTime.now());
+  return ActivityProgress.metricValuePerDay(
+    ActivityMetric.caloriesBurned,
+    activities,
+    weekStart,
+  );
 });

@@ -54,7 +54,7 @@ class DashboardPage extends ConsumerWidget {
           SizedBox(height: spacing.sectionGap),
           _SectionHeader(
             title: 'Recent activities',
-            onViewAll: () => context.push(AppRoutes.activitiesAll),
+            onViewAll: () => context.push(AppRoutes.activitiesHistory),
           ),
           SizedBox(height: spacing.stackMd),
           activitiesAsync.when(

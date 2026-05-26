@@ -68,36 +68,47 @@ class ActivityProgress {
     return all.where((a) => !a.startedAt.isBefore(since)).toList();
   }
 
+  static double _singleActivityMetric(ActivityMetric metric, Activity a) {
+    switch (metric) {
+      case ActivityMetric.cyclingDistance:
+        return a.type == ActivityType.cycling ? a.distanceMeters / 1000 : 0;
+      case ActivityMetric.runningDistance:
+        return a.type == ActivityType.running ? a.distanceMeters / 1000 : 0;
+      case ActivityMetric.walkingDistance:
+        return a.type == ActivityType.walking ? a.distanceMeters / 1000 : 0;
+      case ActivityMetric.activeMinutes:
+        return a.durationSeconds / 60;
+      case ActivityMetric.caloriesBurned:
+        return a.caloriesKcal ?? 0;
+      case ActivityMetric.workouts:
+        return 1;
+    }
+  }
+
   static double metricValue(
     ActivityMetric metric,
     List<Activity> activities,
   ) {
-    switch (metric) {
-      case ActivityMetric.cyclingDistance:
-        return activities
-            .where((a) => a.type == ActivityType.cycling)
-            .fold<double>(0, (s, a) => s + a.distanceMeters / 1000);
-      case ActivityMetric.runningDistance:
-        return activities
-            .where((a) => a.type == ActivityType.running)
-            .fold<double>(0, (s, a) => s + a.distanceMeters / 1000);
-      case ActivityMetric.walkingDistance:
-        return activities
-            .where((a) => a.type == ActivityType.walking)
-            .fold<double>(0, (s, a) => s + a.distanceMeters / 1000);
-      case ActivityMetric.activeMinutes:
-        return activities.fold<double>(
-          0,
-          (s, a) => s + a.durationSeconds / 60,
-        );
-      case ActivityMetric.caloriesBurned:
-        return activities.fold<double>(
-          0,
-          (s, a) => s + (a.caloriesKcal ?? 0),
-        );
-      case ActivityMetric.workouts:
-        return activities.length.toDouble();
+    return activities.fold<double>(
+      0,
+      (s, a) => s + _singleActivityMetric(metric, a),
+    );
+  }
+
+  static List<double> metricValuePerDay(
+    ActivityMetric metric,
+    List<Activity> all,
+    DateTime weekStart,
+  ) {
+    final values = List<double>.filled(7, 0);
+    for (final a in all) {
+      final local = a.startedAt.toLocal();
+      final day = DateTime(local.year, local.month, local.day);
+      final diff = day.difference(weekStart).inDays;
+      if (diff < 0 || diff > 6) continue;
+      values[diff] += _singleActivityMetric(metric, a);
     }
+    return values;
   }
 
   static TodayActivityStats todayStats(List<Activity> all, DateTime now) {

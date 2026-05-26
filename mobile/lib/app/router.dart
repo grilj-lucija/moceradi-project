@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:health_app/app/home_shell.dart';
 import 'package:health_app/data/models/activity.dart';
 import 'package:health_app/data/models/food.dart';
+import 'package:health_app/features/activities/presentation/pages/activities_history_page.dart';
 import 'package:health_app/features/activities/presentation/pages/activities_page.dart';
 import 'package:health_app/features/auth/presentation/pages/login_page.dart';
 import 'package:health_app/features/auth/presentation/pages/register_page.dart';
@@ -47,9 +48,10 @@ class AppRoutes {
   static const nutritionRecipes = '/nutrition/recipes';
   static const nutritionRecipeNew = '/nutrition/recipes/new';
   static const activityDetail = '/activity';
-  static const activitiesAll = '/activities/all';
   static const profile = '/profile';
   static const editGoals = '/profile/goals';
+  static const activitiesHistory = '/activities/history';
+  static const workoutStart = '/workout/start';
   static const workoutActive = '/workout/active';
   static const workoutSummary = '/workout/summary';
 
@@ -110,6 +112,16 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.onboarding,
         builder: (context, state) => const OnboardingPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.activitiesHistory,
+        parentNavigatorKey: navKey,
+        builder: (context, state) => const ActivitiesHistoryPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.workoutStart,
+        parentNavigatorKey: navKey,
+        builder: (context, state) => const SelectActivityPage(),
       ),
       GoRoute(
         path: AppRoutes.workoutActive,
@@ -205,11 +217,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           return ActivityDetailPage(activity: activity);
         },
       ),
-      GoRoute(
-        path: AppRoutes.activitiesAll,
-        parentNavigatorKey: navKey,
-        builder: (context, state) => const ActivitiesPage(),
-      ),
       StatefulShellRoute.indexedStack(
         parentNavigatorKey: navKey,
         builder: (context, state, navShell) => HomeShell(
@@ -231,7 +238,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: AppRoutes.activities,
-                builder: (context, state) => const SelectActivityPage(),
+                builder: (context, state) => const ActivitiesPage(),
               ),
             ],
           ),
