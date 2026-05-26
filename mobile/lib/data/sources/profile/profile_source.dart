@@ -12,6 +12,8 @@ abstract interface class ProfileSource {
     DateTime? dateOfBirth,
     double? heightCm,
     double? weightKg,
+    ActivityLevel? activityLevel,
+    double? targetWeightKg,
     bool markOnboarded = false,
   });
 }

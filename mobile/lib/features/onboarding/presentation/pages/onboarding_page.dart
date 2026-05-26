@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:health_app/app/theme/app_theme.dart';
 import 'package:health_app/features/onboarding/presentation/providers/onboarding_controller.dart';
 import 'package:health_app/features/onboarding/presentation/widgets/body_step.dart';
+import 'package:health_app/features/onboarding/presentation/widgets/goals_step.dart';
 import 'package:health_app/features/onboarding/presentation/widgets/identity_step.dart';
+import 'package:health_app/features/onboarding/presentation/widgets/nutrition_plan_step.dart';
 import 'package:health_app/shared/widgets/buttons/primary_button.dart';
 
 class OnboardingPage extends ConsumerStatefulWidget {
@@ -14,15 +16,19 @@ class OnboardingPage extends ConsumerStatefulWidget {
 }
 
 class _OnboardingPageState extends ConsumerState<OnboardingPage> {
-  static const _totalSteps = 2;
+  static const _totalSteps = 4;
 
   final _pageController = PageController();
   final _identityFormKey = GlobalKey<FormState>();
   final _bodyFormKey = GlobalKey<FormState>();
+  final _goalsFormKey = GlobalKey<FormState>();
+  final _planFormKey = GlobalKey<FormState>();
   int _currentStep = 0;
   String? _errorText;
   bool _identityAttempted = false;
   bool _bodyAttempted = false;
+  bool _goalsAttempted = false;
+  bool _planAttempted = false;
 
   @override
   void dispose() {
@@ -40,13 +46,42 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeOut,
       );
-    } else {
+    } else if (_currentStep == 1) {
       setState(() => _bodyAttempted = true);
       final formOk = _bodyFormKey.currentState!.validate();
       final form = ref.read(onboardingControllerProvider);
-      final extrasOk = form.gender != null && form.dateOfBirth != null;
+      final extrasOk = form.gender != null &&
+          form.dateOfBirth != null &&
+          form.activityLevel != null;
       if (!formOk || !extrasOk) {
         setState(() => _errorText = 'Please complete every field.');
+        return;
+      }
+      await _pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    } else if (_currentStep == 2) {
+      setState(() => _goalsAttempted = true);
+      final formOk = _goalsFormKey.currentState!.validate();
+      final form = ref.read(onboardingControllerProvider);
+      final extrasOk = form.intents.isNotEmpty &&
+          form.activityMetric != null &&
+          (form.activityTarget ?? 0) > 0;
+      if (!formOk || !extrasOk) {
+        setState(() => _errorText = 'Please complete every field.');
+        return;
+      }
+      await _pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    } else {
+      setState(() => _planAttempted = true);
+      _planFormKey.currentState?.validate();
+      final form = ref.read(onboardingControllerProvider);
+      if (form.effectiveKcal == null) {
+        setState(() => _errorText = 'Could not compute a plan. Go back and review your details.');
         return;
       }
       final failure =
@@ -126,6 +161,32 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                             child: BodyStep(
                               formKey: _bodyFormKey,
                               autovalidateMode: _bodyAttempted
+                                  ? AutovalidateMode.onUserInteraction
+                                  : AutovalidateMode.disabled,
+                            ),
+                          ),
+                          SingleChildScrollView(
+                            keyboardDismissBehavior:
+                                ScrollViewKeyboardDismissBehavior.onDrag,
+                            padding: EdgeInsets.only(
+                              bottom: spacing.sectionGap,
+                            ),
+                            child: GoalsStep(
+                              formKey: _goalsFormKey,
+                              autovalidateMode: _goalsAttempted
+                                  ? AutovalidateMode.onUserInteraction
+                                  : AutovalidateMode.disabled,
+                            ),
+                          ),
+                          SingleChildScrollView(
+                            keyboardDismissBehavior:
+                                ScrollViewKeyboardDismissBehavior.onDrag,
+                            padding: EdgeInsets.only(
+                              bottom: spacing.sectionGap,
+                            ),
+                            child: NutritionPlanStep(
+                              formKey: _planFormKey,
+                              autovalidateMode: _planAttempted
                                   ? AutovalidateMode.onUserInteraction
                                   : AutovalidateMode.disabled,
                             ),
