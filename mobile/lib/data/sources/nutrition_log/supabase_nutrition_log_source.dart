@@ -60,6 +60,36 @@ class SupabaseNutritionLogSource implements NutritionLogSource {
   }
 
   @override
+  Future<FoodEntry> updateEntry(
+    String id, {
+    double? grams,
+    MealSlot? mealSlot,
+  }) async {
+    final uid = _requireUid();
+    final payload = <String, dynamic>{
+      'grams': ?grams,
+      'meal_slot': ?mealSlot?.wireValue,
+    };
+    if (payload.isEmpty) {
+      final row = await _client
+          .from(_entriesTable)
+          .select()
+          .eq('id', id)
+          .eq('user_id', uid)
+          .single();
+      return _entryFromRow(row);
+    }
+    final row = await _client
+        .from(_entriesTable)
+        .update(payload)
+        .eq('id', id)
+        .eq('user_id', uid)
+        .select()
+        .single();
+    return _entryFromRow(row);
+  }
+
+  @override
   Future<void> removeEntry(String id) async {
     final uid = _requireUid();
     await _client
@@ -87,6 +117,17 @@ class SupabaseNutritionLogSource implements NutritionLogSource {
         .select()
         .single();
     return _goalFromRow(inserted);
+  }
+
+  @override
+  Future<DailyNutritionGoal> updateDailyKcal(double kcal) async {
+    final uid = _requireUid();
+    final row = await _client
+        .from(_goalsTable)
+        .upsert({'user_id': uid, 'kcal': kcal})
+        .select()
+        .single();
+    return _goalFromRow(row);
   }
 
   FoodEntry _entryFromRow(Map<String, dynamic> row) {
