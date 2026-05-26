@@ -24,6 +24,7 @@ import 'package:health_app/features/nutrition/presentation/pages/recipe_form_pag
 import 'package:health_app/features/nutrition/presentation/pages/recipes_page.dart';
 import 'package:health_app/features/onboarding/presentation/pages/onboarding_page.dart';
 import 'package:health_app/features/profile/presentation/pages/edit_goals_page.dart';
+import 'package:health_app/features/profile/presentation/pages/edit_profile_page.dart';
 import 'package:health_app/features/profile/presentation/pages/profile_page.dart';
 import 'package:health_app/features/workout/presentation/pages/active_workout_page.dart';
 import 'package:health_app/features/workout/presentation/pages/select_activity_page.dart';
@@ -50,6 +51,7 @@ class AppRoutes {
   static const activityDetail = '/activity';
   static const profile = '/profile';
   static const editGoals = '/profile/goals';
+  static const editProfile = '/profile/edit';
   static const activitiesHistory = '/activities/history';
   static const workoutStart = '/workout/start';
   static const workoutActive = '/workout/active';
@@ -142,6 +144,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.editGoals,
         parentNavigatorKey: navKey,
         builder: (context, state) => const EditGoalsPage(),
+      ),
+      GoRoute(
+        path: AppRoutes.editProfile,
+        parentNavigatorKey: navKey,
+        builder: (context, state) => const EditProfilePage(),
       ),
       GoRoute(
         path: AppRoutes.nutritionAdd,

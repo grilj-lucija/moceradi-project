@@ -10,6 +10,7 @@ import 'package:health_app/features/nutrition/presentation/widgets/logged_food_l
 import 'package:health_app/features/nutrition/presentation/widgets/macro_bar.dart';
 import 'package:health_app/features/nutrition/presentation/widgets/meal_breakdown_bar.dart';
 import 'package:health_app/shared/widgets/buttons/floating_action_pill.dart';
+import 'package:health_app/shared/widgets/buttons/glass_icon_button.dart';
 import 'package:health_app/shared/widgets/cards/glass_card.dart';
 import 'package:health_app/shared/widgets/layout/page_header.dart';
 import 'package:intl/intl.dart';
@@ -142,32 +143,32 @@ class _DatePickerButton extends StatelessWidget {
         ? 'Pick a date'
         : 'Viewing ${DateFormat('MMM d').format(selectedDate)}';
 
-    return IconButton(
-      tooltip: tooltip,
-      onPressed: () => _open(context),
-      icon: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Icon(
-            Icons.calendar_today_outlined,
-            color: colors.onSurfaceVariant,
-          ),
-          if (!isToday)
-            Positioned(
-              top: -3,
-              right: -3,
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        GlassIconButton(
+          icon: Icons.calendar_today_outlined,
+          tooltip: tooltip,
+          iconSize: 20,
+          onPressed: () => _open(context),
+        ),
+        if (!isToday)
+          Positioned(
+            top: 2,
+            right: 2,
+            child: IgnorePointer(
               child: Container(
-                width: 11,
-                height: 11,
+                width: 10,
+                height: 10,
                 decoration: BoxDecoration(
                   color: colors.enduranceCyan,
                   shape: BoxShape.circle,
-                  border: Border.all(color: colors.surface, width: 1.5),
+                  border: Border.all(color: colors.background, width: 1.5),
                 ),
               ),
             ),
-        ],
-      ),
+          ),
+      ],
     );
   }
 

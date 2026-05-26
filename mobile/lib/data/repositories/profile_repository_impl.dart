@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:health_app/core/errors/failures.dart';
 import 'package:health_app/core/result/result.dart';
 import 'package:health_app/data/models/profile.dart';
@@ -33,6 +35,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
     double? weightKg,
     ActivityLevel? activityLevel,
     double? targetWeightKg,
+    String? avatarUrl,
     bool markOnboarded = false,
   }) async {
     try {
@@ -45,6 +48,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
         weightKg: weightKg,
         activityLevel: activityLevel,
         targetWeightKg: targetWeightKg,
+        avatarUrl: avatarUrl,
         markOnboarded: markOnboarded,
       );
       return Result.ok(profile);
@@ -52,6 +56,34 @@ class ProfileRepositoryImpl implements ProfileRepository {
       return const Result.err(
         ValidationFailure('Username already taken'),
       );
+    } on Object catch (e) {
+      return Result.err(NetworkFailure(e.toString(), e));
+    }
+  }
+
+  @override
+  Future<Result<bool>> isUsernameAvailable(String username) async {
+    try {
+      final available = await _source.isUsernameAvailable(username);
+      return Result.ok(available);
+    } on Object catch (e) {
+      return Result.err(NetworkFailure(e.toString(), e));
+    }
+  }
+
+  @override
+  Future<Result<String>> uploadAvatar({
+    required Uint8List bytes,
+    required String contentType,
+    required String fileExtension,
+  }) async {
+    try {
+      final url = await _source.uploadAvatar(
+        bytes: bytes,
+        contentType: contentType,
+        fileExtension: fileExtension,
+      );
+      return Result.ok(url);
     } on Object catch (e) {
       return Result.err(NetworkFailure(e.toString(), e));
     }

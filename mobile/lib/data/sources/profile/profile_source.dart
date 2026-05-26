@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:health_app/data/models/profile.dart';
 
 abstract interface class ProfileSource {
@@ -14,6 +16,15 @@ abstract interface class ProfileSource {
     double? weightKg,
     ActivityLevel? activityLevel,
     double? targetWeightKg,
+    String? avatarUrl,
     bool markOnboarded = false,
+  });
+
+  Future<bool> isUsernameAvailable(String username);
+
+  Future<String> uploadAvatar({
+    required Uint8List bytes,
+    required String contentType,
+    required String fileExtension,
   });
 }
