@@ -13,6 +13,8 @@ abstract interface class ProfileRepository {
     DateTime? dateOfBirth,
     double? heightCm,
     double? weightKg,
+    ActivityLevel? activityLevel,
+    double? targetWeightKg,
     bool markOnboarded = false,
   });
 }

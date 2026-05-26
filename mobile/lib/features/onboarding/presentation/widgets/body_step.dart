@@ -148,6 +148,23 @@ class _BodyStepState extends ConsumerState<BodyStep>
             ),
           ),
           SizedBox(height: spacing.stackLg),
+          _label(context, 'CURRENT ACTIVITY'),
+          SizedBox(height: spacing.stackSm),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (final level in ActivityLevel.values) ...[
+                _ActivityLevelTile(
+                  level: level,
+                  selected: state.activityLevel == level,
+                  onTap: () => controller.setActivityLevel(level),
+                ),
+                if (level != ActivityLevel.values.last)
+                  SizedBox(height: spacing.gutter / 2),
+              ],
+            ],
+          ),
+          SizedBox(height: spacing.stackLg),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -229,4 +246,76 @@ class _BodyStepState extends ConsumerState<BodyStep>
           color: context.colors.onSurfaceVariant,
         ),
       );
+}
+
+class _ActivityLevelTile extends StatelessWidget {
+  const _ActivityLevelTile({
+    required this.level,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final ActivityLevel level;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final typography = context.typography;
+    final radius = context.radius;
+    final spacing = context.spacing;
+
+    final borderColor = selected ? colors.enduranceCyan : colors.ghostBorder;
+    final titleColor = selected ? colors.onSurface : colors.onSurface;
+    final descColor =
+        selected ? colors.enduranceCyan : colors.onSurfaceVariant;
+
+    return Material(
+      color: Colors.transparent,
+      borderRadius: radius.mdRadius,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: radius.mdRadius,
+        child: Ink(
+          decoration: BoxDecoration(
+            color: selected
+                ? colors.surfaceContainerHigh
+                : colors.surfaceContainerLow,
+            borderRadius: radius.mdRadius,
+            border: Border.all(
+              color: borderColor,
+              width: selected ? 1.5 : 1,
+            ),
+          ),
+          padding: EdgeInsets.symmetric(
+            horizontal: spacing.stackMd,
+            vertical: spacing.stackMd,
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(level.label, style: typography.bodyMd.copyWith(
+                      color: titleColor,
+                      fontWeight: FontWeight.w600,
+                    )),
+                    SizedBox(height: spacing.stackSm / 2),
+                    Text(
+                      level.description,
+                      style: typography.labelMd.copyWith(color: descColor),
+                    ),
+                  ],
+                ),
+              ),
+              if (selected)
+                Icon(Icons.check_circle, color: colors.enduranceCyan, size: 20),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }

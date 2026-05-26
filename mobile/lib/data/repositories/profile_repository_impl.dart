@@ -31,6 +31,8 @@ class ProfileRepositoryImpl implements ProfileRepository {
     DateTime? dateOfBirth,
     double? heightCm,
     double? weightKg,
+    ActivityLevel? activityLevel,
+    double? targetWeightKg,
     bool markOnboarded = false,
   }) async {
     try {
@@ -41,6 +43,8 @@ class ProfileRepositoryImpl implements ProfileRepository {
         dateOfBirth: dateOfBirth,
         heightCm: heightCm,
         weightKg: weightKg,
+        activityLevel: activityLevel,
+        targetWeightKg: targetWeightKg,
         markOnboarded: markOnboarded,
       );
       return Result.ok(profile);

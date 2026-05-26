@@ -18,6 +18,8 @@ class MockProfileSource implements ProfileSource {
     dateOfBirth: DateTime(1998, 6, 15),
     heightCm: 180,
     weightKg: 72,
+    activityLevel: ActivityLevel.moderate,
+    targetWeightKg: 70,
     onboardedAt: DateTime.now().subtract(const Duration(days: 30)),
     createdAt: DateTime.now().subtract(const Duration(days: 30)),
     updatedAt: DateTime.now(),
@@ -43,6 +45,8 @@ class MockProfileSource implements ProfileSource {
     DateTime? dateOfBirth,
     double? heightCm,
     double? weightKg,
+    ActivityLevel? activityLevel,
+    double? targetWeightKg,
     bool markOnboarded = false,
   }) async {
     await Future<void>.delayed(const Duration(milliseconds: 250));
@@ -53,6 +57,8 @@ class MockProfileSource implements ProfileSource {
       dateOfBirth: dateOfBirth,
       heightCm: heightCm,
       weightKg: weightKg,
+      activityLevel: activityLevel,
+      targetWeightKg: targetWeightKg,
       onboardedAt: markOnboarded ? DateTime.now() : _current.onboardedAt,
       updatedAt: DateTime.now(),
     );

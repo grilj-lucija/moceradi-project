@@ -14,6 +14,44 @@ extension GenderX on Gender {
   }
 }
 
+enum ActivityLevel { sedentary, light, moderate, active, athlete }
+
+extension ActivityLevelX on ActivityLevel {
+  String get wireValue => name;
+
+  String get label => switch (this) {
+        ActivityLevel.sedentary => 'Sedentary',
+        ActivityLevel.light => 'Light',
+        ActivityLevel.moderate => 'Moderate',
+        ActivityLevel.active => 'Active',
+        ActivityLevel.athlete => 'Athlete',
+      };
+
+  String get description => switch (this) {
+        ActivityLevel.sedentary => 'Desk job, no exercise',
+        ActivityLevel.light => '1–3 light workouts / week',
+        ActivityLevel.moderate => '3–5 workouts / week',
+        ActivityLevel.active => '6–7 workouts / week',
+        ActivityLevel.athlete => 'Daily training or athlete',
+      };
+
+  double get tdeeMultiplier => switch (this) {
+        ActivityLevel.sedentary => 1.2,
+        ActivityLevel.light => 1.375,
+        ActivityLevel.moderate => 1.55,
+        ActivityLevel.active => 1.725,
+        ActivityLevel.athlete => 1.9,
+      };
+
+  static ActivityLevel? fromWire(String? value) {
+    if (value == null) return null;
+    for (final l in ActivityLevel.values) {
+      if (l.name == value) return l;
+    }
+    return null;
+  }
+}
+
 class Profile extends Equatable {
   const Profile({
     required this.id,
@@ -27,6 +65,8 @@ class Profile extends Equatable {
     this.heightCm,
     this.weightKg,
     this.onboardedAt,
+    this.activityLevel,
+    this.targetWeightKg,
   });
 
   factory Profile.fromJson(Map<String, dynamic> json) => Profile(
@@ -45,6 +85,9 @@ class Profile extends Equatable {
             : DateTime.parse(json['onboarded_at'] as String),
         createdAt: DateTime.parse(json['created_at'] as String),
         updatedAt: DateTime.parse(json['updated_at'] as String),
+        activityLevel:
+            ActivityLevelX.fromWire(json['activity_level'] as String?),
+        targetWeightKg: (json['target_weight_kg'] as num?)?.toDouble(),
       );
 
   final String id;
@@ -58,6 +101,8 @@ class Profile extends Equatable {
   final DateTime? onboardedAt;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final ActivityLevel? activityLevel;
+  final double? targetWeightKg;
 
   bool get isOnboarded => onboardedAt != null;
 
@@ -89,6 +134,8 @@ class Profile extends Equatable {
         'onboarded_at': onboardedAt?.toIso8601String(),
         'created_at': createdAt.toIso8601String(),
         'updated_at': updatedAt.toIso8601String(),
+        'activity_level': activityLevel?.wireValue,
+        'target_weight_kg': targetWeightKg,
       };
 
   Profile copyWith({
@@ -101,6 +148,8 @@ class Profile extends Equatable {
     double? weightKg,
     DateTime? onboardedAt,
     DateTime? updatedAt,
+    ActivityLevel? activityLevel,
+    double? targetWeightKg,
   }) =>
       Profile(
         id: id,
@@ -114,6 +163,8 @@ class Profile extends Equatable {
         onboardedAt: onboardedAt ?? this.onboardedAt,
         createdAt: createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
+        activityLevel: activityLevel ?? this.activityLevel,
+        targetWeightKg: targetWeightKg ?? this.targetWeightKg,
       );
 
   @override
@@ -129,5 +180,7 @@ class Profile extends Equatable {
         onboardedAt,
         createdAt,
         updatedAt,
+        activityLevel,
+        targetWeightKg,
       ];
 }
