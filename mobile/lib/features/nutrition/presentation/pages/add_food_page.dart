@@ -9,7 +9,6 @@ class AddFoodPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final typography = context.typography;
     final spacing = context.spacing;
 
     return Scaffold(
@@ -46,25 +45,12 @@ class AddFoodPage extends StatelessWidget {
             onTap: () => context.push(AppRoutes.nutritionPhoto),
             highlight: true,
           ),
-          SizedBox(height: spacing.sectionGap),
-          Text('OR', style: typography.labelMd.copyWith(
-            color: colors.onSurfaceVariant,
-          )),
           SizedBox(height: spacing.stackMd),
           _ActionCard(
             icon: Icons.edit_note,
             title: 'Create custom food',
             subtitle: 'Enter your own kcal and macros',
             onTap: () => context.push(AppRoutes.nutritionCustom),
-            compact: true,
-          ),
-          SizedBox(height: spacing.stackMd),
-          _ActionCard(
-            icon: Icons.menu_book_outlined,
-            title: 'My recipes',
-            subtitle: 'Reusable templates of multiple foods',
-            onTap: () => context.push(AppRoutes.nutritionRecipes),
-            compact: true,
           ),
         ],
       ),

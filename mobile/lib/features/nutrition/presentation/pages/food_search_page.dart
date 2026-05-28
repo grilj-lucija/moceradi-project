@@ -233,7 +233,6 @@ class _ScopeChips extends StatelessWidget {
     (FoodSearchScope.all, 'All'),
     (FoodSearchScope.recent, 'Recent'),
     (FoodSearchScope.custom, 'Custom'),
-    (FoodSearchScope.recipes, 'Recipes'),
   ];
 
   @override

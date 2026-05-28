@@ -23,6 +23,8 @@ class LoggedFoodList extends ConsumerWidget {
     final spacing = context.spacing;
     final radius = context.radius;
 
+    if (entries.isEmpty) return _EmptyState(allowEdit: allowEdit);
+
     final sorted = [...entries]
       ..sort((a, b) => b.loggedAt.compareTo(a.loggedAt));
 
@@ -32,28 +34,23 @@ class LoggedFoodList extends ConsumerWidget {
         borderRadius: radius.xlRadius,
         border: Border.all(color: colors.ghostBorder),
       ),
-      child: entries.isEmpty
-          ? Padding(
-              padding: EdgeInsets.all(spacing.stackMd),
-              child: _EmptyState(allowEdit: allowEdit),
-            )
-          : ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              padding: EdgeInsets.symmetric(vertical: spacing.stackSm / 2),
-              itemCount: sorted.length,
-              separatorBuilder: (_, _) => Divider(
-                height: 1,
-                thickness: 1,
-                color: colors.outlineVariant.withValues(alpha: 0.25),
-                indent: spacing.stackLg,
-                endIndent: spacing.stackLg,
-              ),
-              itemBuilder: (_, i) => _EntryTile(
-                entry: sorted[i],
-                allowEdit: allowEdit,
-              ),
-            ),
+      child: ListView.separated(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        padding: EdgeInsets.symmetric(vertical: spacing.stackSm / 2),
+        itemCount: sorted.length,
+        separatorBuilder: (_, _) => Divider(
+          height: 1,
+          thickness: 1,
+          color: colors.outlineVariant.withValues(alpha: 0.25),
+          indent: spacing.stackLg,
+          endIndent: spacing.stackLg,
+        ),
+        itemBuilder: (_, i) => _EntryTile(
+          entry: sorted[i],
+          allowEdit: allowEdit,
+        ),
+      ),
     );
   }
 }
@@ -71,27 +68,22 @@ class _EmptyState extends StatelessWidget {
     final radius = context.radius;
 
     return Container(
-      padding: EdgeInsets.all(spacing.stackMd),
+      padding: EdgeInsets.all(spacing.stackLg),
       decoration: BoxDecoration(
         color: colors.surfaceContainerLow,
-        borderRadius: radius.mdRadius,
+        borderRadius: radius.lgRadius,
         border: Border.all(color: colors.ghostBorder),
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.restaurant_outlined,
-            color: colors.onSurfaceVariant,
-            size: 20,
-          ),
+          Icon(Icons.restaurant_outlined, color: colors.onSurfaceVariant),
           SizedBox(width: spacing.stackMd),
           Expanded(
             child: Text(
               allowEdit
-                  ? 'Nothing logged yet. Tap “Log food” to start.'
+                  ? 'Nothing logged yet.\nTap "Log food" to start.'
                   : 'No food logged on this day.',
-              style: typography.bodyMd
-                  .copyWith(color: colors.onSurfaceVariant),
+              style: typography.bodyMd.copyWith(color: colors.onSurfaceVariant),
             ),
           ),
         ],
