@@ -81,10 +81,10 @@ class MealBreakdownBar extends StatelessWidget {
   static Color _slotColor(BuildContext context, MealSlot slot) {
     final colors = context.colors;
     return switch (slot) {
-      MealSlot.breakfast => colors.enduranceCyan,
-      MealSlot.lunch => colors.velocityBlue,
-      MealSlot.dinner => colors.tertiary,
-      MealSlot.snack => colors.primary,
+      MealSlot.breakfast => colors.chartProtein,
+      MealSlot.lunch => colors.chartCarbs,
+      MealSlot.dinner => colors.chartFat,
+      MealSlot.snack => colors.chartSnack,
     };
   }
 }

@@ -10,9 +10,18 @@ class ProfileGradient extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final base = Color.lerp(colors.velocityBlue, colors.enduranceCyan, 0.18)!;
-    final innerBlue = Color.lerp(base, Colors.black, 0.16)!;
-    final midBlue = Color.lerp(base, Colors.black, 0.6)!;
+
+    final Color innerBlue;
+    final Color midBlue;
+    if (isDark) {
+      innerBlue = Color.lerp(base, Colors.black, 0.16)!;
+      midBlue = Color.lerp(base, Colors.black, 0.6)!;
+    } else {
+      innerBlue = Color.lerp(colors.background, base, 0.55)!;
+      midBlue = Color.lerp(colors.background, base, 0.18)!;
+    }
 
     return SizedBox(
       height: height,
