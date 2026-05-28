@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:health_app/app/router.dart';
 import 'package:health_app/app/theme/app_spacing.dart';
 import 'package:health_app/app/theme/app_theme.dart';
+import 'package:health_app/features/activities/presentation/skeletons/activities_skeleton.dart';
 import 'package:health_app/features/activities/presentation/widgets/weekly_bars_card.dart';
 import 'package:health_app/features/dashboard/presentation/providers/dashboard_controller.dart';
 import 'package:health_app/features/dashboard/presentation/widgets/activity_card.dart';
@@ -75,10 +76,7 @@ class ActivitiesPage extends ConsumerWidget {
                     ],
                   );
                 },
-                loading: () => const Padding(
-                  padding: EdgeInsets.all(24),
-                  child: Center(child: CircularProgressIndicator()),
-                ),
+                loading: () => const ActivitiesListSkeleton(),
                 error: (e, _) => Text(
                   'Could not load activities: $e',
                   style: typography.bodyMd.copyWith(color: colors.error),

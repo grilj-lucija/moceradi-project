@@ -7,6 +7,7 @@ import 'package:health_app/app/theme/app_theme.dart';
 import 'package:health_app/data/models/user_goals.dart';
 import 'package:health_app/features/auth/presentation/providers/user_goals_provider.dart';
 import 'package:health_app/features/dashboard/presentation/providers/dashboard_controller.dart';
+import 'package:health_app/features/dashboard/presentation/skeletons/dashboard_skeleton.dart';
 import 'package:health_app/features/dashboard/presentation/widgets/activity_card.dart';
 import 'package:health_app/features/dashboard/presentation/widgets/daily_energy_hero.dart';
 import 'package:health_app/features/dashboard/presentation/widgets/today_stats_row.dart';
@@ -14,6 +15,7 @@ import 'package:health_app/features/dashboard/presentation/widgets/weekly_activi
 import 'package:health_app/features/weight/presentation/providers/weight_controller.dart';
 import 'package:health_app/features/weight/presentation/widgets/weekly_weight_reminder_card.dart';
 import 'package:health_app/shared/widgets/layout/page_header.dart';
+import 'package:health_app/shared/widgets/skeleton/skeleton.dart';
 import 'package:intl/intl.dart';
 
 class DashboardPage extends ConsumerWidget {
@@ -79,9 +81,14 @@ class DashboardPage extends ConsumerWidget {
                 ],
               );
             },
-            loading: () => const Padding(
-              padding: EdgeInsets.all(24),
-              child: Center(child: CircularProgressIndicator()),
+            loading: () => SkeletonGroup(
+              child: Column(
+                children: [
+                  const ActivityCardSkeleton(),
+                  SizedBox(height: spacing.stackMd),
+                  const ActivityCardSkeleton(),
+                ],
+              ),
             ),
             error: (e, _) => Text(
               'Could not load activities: $e',

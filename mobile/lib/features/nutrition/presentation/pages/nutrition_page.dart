@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:health_app/app/router.dart';
 import 'package:health_app/app/theme/app_theme.dart';
 import 'package:health_app/features/nutrition/presentation/providers/daily_nutrition_controller.dart';
+import 'package:health_app/features/nutrition/presentation/skeletons/nutrition_skeleton.dart';
 import 'package:health_app/features/nutrition/presentation/widgets/calorie_ring.dart';
 import 'package:health_app/features/nutrition/presentation/widgets/liquids_card.dart';
 import 'package:health_app/features/nutrition/presentation/widgets/logged_food_list.dart';
@@ -50,10 +51,7 @@ class NutritionPage extends ConsumerWidget {
               ),
               SizedBox(height: spacing.stackMd),
               state.when(
-                loading: () => const Padding(
-                  padding: EdgeInsets.all(48),
-                  child: Center(child: CircularProgressIndicator()),
-                ),
+                loading: () => const NutritionSkeleton(),
                 error: (e, _) => Text(
                   'Could not load nutrition: $e',
                   style: typography.bodyMd.copyWith(color: colors.error),

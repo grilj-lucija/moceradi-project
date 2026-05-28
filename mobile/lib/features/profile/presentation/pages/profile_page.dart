@@ -11,6 +11,7 @@ import 'package:health_app/app/theme/app_theme.dart';
 import 'package:health_app/data/models/profile.dart';
 import 'package:health_app/features/auth/presentation/providers/auth_controller.dart';
 import 'package:health_app/features/auth/presentation/providers/profile_provider.dart';
+import 'package:health_app/features/profile/presentation/skeletons/profile_skeleton.dart';
 import 'package:health_app/features/profile/presentation/widgets/achievements_strip.dart';
 import 'package:health_app/features/profile/presentation/widgets/profile_banner.dart';
 import 'package:health_app/features/profile/presentation/widgets/profile_stats_strip.dart';
@@ -36,7 +37,7 @@ class ProfilePage extends ConsumerWidget {
         extendBodyBehindAppBar: true,
         backgroundColor: colors.background,
         body: profileAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const ProfileSkeleton(),
           error: (e, _) => SafeArea(
             child: Padding(
               padding: EdgeInsets.all(spacing.stackLg),

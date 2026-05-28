@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:health_app/app/router.dart';
 import 'package:health_app/app/theme/app_theme.dart';
 import 'package:health_app/data/models/activity.dart';
+import 'package:health_app/features/activities/presentation/skeletons/activities_history_skeleton.dart';
 import 'package:health_app/features/dashboard/presentation/providers/dashboard_controller.dart';
 import 'package:health_app/features/dashboard/presentation/widgets/activity_card.dart';
 import 'package:intl/intl.dart';
@@ -103,7 +104,7 @@ class ActivitiesHistoryPage extends ConsumerWidget {
               },
             );
           },
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const ActivitiesHistorySkeleton(),
           error: (e, _) => Center(
             child: Padding(
               padding: EdgeInsets.all(spacing.stackLg),

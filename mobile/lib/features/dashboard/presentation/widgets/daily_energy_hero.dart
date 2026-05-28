@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:health_app/app/router.dart';
 import 'package:health_app/app/theme/app_theme.dart';
+import 'package:health_app/features/dashboard/presentation/skeletons/dashboard_skeleton.dart';
 import 'package:health_app/features/nutrition/presentation/providers/daily_nutrition_controller.dart';
 import 'package:health_app/shared/widgets/cards/glass_card.dart';
 import 'package:health_app/shared/widgets/progress/progress_ring.dart';
@@ -34,10 +35,7 @@ class DailyEnergyHero extends ConsumerWidget {
             vertical: spacing.stackMd,
           ),
           child: state.when(
-            loading: () => const SizedBox(
-              height: 96,
-              child: Center(child: CircularProgressIndicator()),
-            ),
+            loading: () => const DailyEnergyHeroSkeletonContent(),
             error: (e, _) => SizedBox(
               height: 96,
               child: Center(
