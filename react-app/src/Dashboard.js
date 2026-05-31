@@ -3,6 +3,17 @@ import { supabase } from './supabaseClient';
 import { BarChart, Bar, XAxis, Tooltip, CartesianGrid, LineChart, Line, YAxis } from 'recharts';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+    iconRetinaUrl: markerIcon2x,
+    iconUrl: markerIcon,
+    shadowUrl: markerShadow,
+});
 
 function Dashboard({ session}){
     const [activities, setActivities] = useState([]);
@@ -36,7 +47,7 @@ function Dashboard({ session}){
     // graf razdalje 
     const distanceData = activities.map(a => ({
         name: new Date(a.started_at).toLocaleDateString('sl-SI'),
-        razdalja: Math.round((a.calories_kcal || 0)/1000 * 100) / 100
+        razdalja: Math.round((a.distance_meters || 0)/1000 * 100) / 100
     }));
 
     const statBox = {padding: '20px', border: '1px solid #ddd', borderRadius: '8px', textAlign: 'center', minWidth: '150px'};
