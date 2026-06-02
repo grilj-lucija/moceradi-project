@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:health_app/core/config/env.dart';
+import 'package:health_app/core/mqtt/mqtt_service.dart';
 import 'package:health_app/data/repositories/activities_repository_impl.dart';
 import 'package:health_app/data/repositories/auth_repository_impl.dart';
 import 'package:health_app/data/repositories/foods_repository_impl.dart';
@@ -92,6 +93,12 @@ final userGoalsRepositoryProvider = Provider<UserGoalsRepository>((ref) {
 
 final locationServiceProvider = Provider<LocationService>((ref) {
   return const LocationService();
+});
+
+final mqttServiceProvider = Provider<MqttService>((ref) {
+  final service = MqttService(host: Env.mqttHost, port: Env.mqttPort);
+  ref.onDispose(service.disconnect);
+  return service;
 });
 
 final foodsSourceProvider = Provider<FoodsSource>((ref) {

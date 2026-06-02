@@ -45,8 +45,10 @@ dependencies:
   intl: ^0.20.2
   latlong2: ^0.9.1
   mobile_scanner: ^7.2.0
+  mqtt_client: ^10.11.11
   openfoodfacts: ^3.30.2
   path_provider: ^2.1.5
+  sensors_plus: ^6.1.2
   shared_preferences: ^2.5.5
   supabase_flutter: ^2.12.4
   uuid: ^4.5.3

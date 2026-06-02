@@ -3,14 +3,20 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart' hide ActivityType;
 import 'package:health_app/di/providers.dart';
+import 'package:health_app/features/auth/presentation/providers/auth_controller.dart';
 import 'package:health_app/features/auth/presentation/providers/profile_provider.dart';
 import 'package:health_app/features/workout/domain/workout_session.dart';
+import 'package:sensors_plus/sensors_plus.dart';
 
 enum WorkoutStartError { permissionDenied }
 
 class WorkoutController extends Notifier<WorkoutSession?> {
   Timer? _ticker;
   StreamSubscription<Position>? _locSub;
+  StreamSubscription<AccelerometerEvent>? _accelSub;
+  StreamSubscription<GyroscopeEvent>? _gyroSub;
+  AccelerometerEvent? _lastAccel;
+  GyroscopeEvent? _lastGyro;
 
   static const double _defaultWeightKg = 70;
 
@@ -40,6 +46,17 @@ class WorkoutController extends Notifier<WorkoutSession?> {
     await _locSub?.cancel();
     _locSub = location.stream().listen(_onPosition);
 
+    await _accelSub?.cancel();
+    _accelSub = accelerometerEventStream().listen((e) => _lastAccel = e);
+    await _gyroSub?.cancel();
+    _gyroSub = gyroscopeEventStream().listen((e) => _lastGyro = e);
+
+    final userId =
+        ref.read(authStateProvider).value?.id ?? profile?.id;
+    if (userId != null) {
+      unawaited(ref.read(mqttServiceProvider).connect(userId));
+    }
+
     return null;
   }
 
@@ -53,7 +70,28 @@ class WorkoutController extends Notifier<WorkoutSession?> {
       altitude: p.altitude,
       speedMps: p.speed >= 0 ? p.speed : null,
     );
-    state = s.copyWith(points: [...s.points, point]);
+    final next = s.copyWith(points: [...s.points, point]);
+    state = next;
+    _publishTelemetry(next, point);
+  }
+
+  void _publishTelemetry(WorkoutSession s, WorkoutPoint point) {
+    final accel = _lastAccel;
+    final gyro = _lastGyro;
+    ref.read(mqttServiceProvider).publishTelemetry({
+      't': point.t.toUtc().toIso8601String(),
+      'type': s.type.name,
+      'lat': point.lat,
+      'lng': point.lng,
+      'altitude': point.altitude,
+      'speedMps': point.speedMps,
+      'distanceM': s.distanceMeters,
+      'durationS': s.durationSeconds,
+      'caloriesKcal': s.caloriesKcal,
+      if (accel != null)
+        'accel': {'x': accel.x, 'y': accel.y, 'z': accel.z},
+      if (gyro != null) 'gyro': {'x': gyro.x, 'y': gyro.y, 'z': gyro.z},
+    });
   }
 
   void pause() {
@@ -97,6 +135,11 @@ class WorkoutController extends Notifier<WorkoutSession?> {
     _ticker = null;
     unawaited(_locSub?.cancel());
     _locSub = null;
+    unawaited(_accelSub?.cancel());
+    _accelSub = null;
+    unawaited(_gyroSub?.cancel());
+    _gyroSub = null;
+    unawaited(ref.read(mqttServiceProvider).disconnect());
 
     final lapDuration = s.currentLapDurationSeconds;
     final lapDistance = s.currentLapDistanceMeters;
@@ -130,6 +173,11 @@ class WorkoutController extends Notifier<WorkoutSession?> {
     _ticker = null;
     unawaited(_locSub?.cancel());
     _locSub = null;
+    unawaited(_accelSub?.cancel());
+    _accelSub = null;
+    unawaited(_gyroSub?.cancel());
+    _gyroSub = null;
+    unawaited(ref.read(mqttServiceProvider).disconnect());
   }
 }
 

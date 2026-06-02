@@ -9,9 +9,15 @@ class Env {
   static String get mapboxPublicToken =>
       dotenv.env['MAPBOX_PUBLIC_TOKEN'] ?? '';
 
+  static String get mqttHost => dotenv.env['MQTT_HOST'] ?? '';
+  static int get mqttPort =>
+      int.tryParse(dotenv.env['MQTT_PORT'] ?? '') ?? 1883;
+
   static bool get useMockData =>
       (dotenv.env['USE_MOCK_DATA'] ?? 'true').toLowerCase() == 'true';
 
   static bool get isSupabaseConfigured =>
       supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty;
+
+  static bool get isMqttConfigured => mqttHost.isNotEmpty;
 }
