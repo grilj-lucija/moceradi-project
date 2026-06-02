@@ -4,6 +4,7 @@ import Auth from './Auth';
 import Profile from './Profile';
 import Dashboard from './Dashboard';
 import Nutrition from './Nutrition';
+import LiveActivity from './LiveActivity';
 import Navbar from './Navbar';
 
 function App() {
@@ -37,12 +38,14 @@ function App() {
       <Navbar
         username={username || session.user.email}
         onDashboard={() => setPage('dashboard')}
+        onLive={() => setPage('live')}
         onNutrition={() => setPage('nutrition')}
         onProfile={() => setPage('profile')}
         onLogout={handleLogout}
         page={page}
       />
       {page === 'dashboard' && <Dashboard session={session} />}
+      {page === 'live' && <LiveActivity session={session} />}
       {page === 'nutrition' && <Nutrition session={session} />}
       {page === 'profile' && <Profile session={session} />}
     </div>
