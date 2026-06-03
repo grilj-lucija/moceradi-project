@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart' hide ActivityType;
 import 'package:health_app/di/providers.dart';
-import 'package:health_app/features/auth/presentation/providers/auth_controller.dart';
 import 'package:health_app/features/auth/presentation/providers/profile_provider.dart';
 import 'package:health_app/features/workout/domain/workout_session.dart';
 import 'package:sensors_plus/sensors_plus.dart';
@@ -39,7 +38,11 @@ class WorkoutController extends Notifier<WorkoutSession?> {
     _ticker?.cancel();
     _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
       final s = state;
-      if (s == null || s.isPaused || s.endedAt != null) return;
+      if (s == null || s.endedAt != null) return;
+      if (s.isPaused) {
+        _publishTelemetry(s);
+        return;
+      }
       final next = s.copyWith(durationSeconds: s.durationSeconds + 1);
       state = next;
       _publishTelemetry(next);
@@ -52,12 +55,6 @@ class WorkoutController extends Notifier<WorkoutSession?> {
     _accelSub = accelerometerEventStream().listen((e) => _lastAccel = e);
     await _gyroSub?.cancel();
     _gyroSub = gyroscopeEventStream().listen((e) => _lastGyro = e);
-
-    final userId =
-        ref.read(authStateProvider).value?.id ?? profile?.id;
-    if (userId != null) {
-      unawaited(ref.read(mqttServiceProvider).connect(userId));
-    }
 
     return null;
   }
@@ -77,12 +74,14 @@ class WorkoutController extends Notifier<WorkoutSession?> {
     _publishTelemetry(next, point: point);
   }
 
-  void _publishTelemetry(WorkoutSession s, {WorkoutPoint? point}) {
+  void _publishTelemetry(WorkoutSession s, {WorkoutPoint? point, bool ended = false}) {
     final accel = _lastAccel;
     final gyro = _lastGyro;
     ref.read(mqttServiceProvider).publishTelemetry({
       't': (point?.t ?? DateTime.now()).toUtc().toIso8601String(),
       'type': s.type.name,
+      'paused': s.isPaused,
+      if (ended) 'ended': true,
       if (point != null) 'lat': point.lat,
       if (point != null) 'lng': point.lng,
       if (point != null) 'altitude': point.altitude,
@@ -133,6 +132,7 @@ class WorkoutController extends Notifier<WorkoutSession?> {
   void stop() {
     final s = state;
     if (s == null) return;
+    _publishTelemetry(s, ended: true);
     _ticker?.cancel();
     _ticker = null;
     unawaited(_locSub?.cancel());
@@ -141,7 +141,6 @@ class WorkoutController extends Notifier<WorkoutSession?> {
     _accelSub = null;
     unawaited(_gyroSub?.cancel());
     _gyroSub = null;
-    unawaited(ref.read(mqttServiceProvider).disconnect());
 
     final lapDuration = s.currentLapDurationSeconds;
     final lapDistance = s.currentLapDistanceMeters;
@@ -179,7 +178,6 @@ class WorkoutController extends Notifier<WorkoutSession?> {
     _accelSub = null;
     unawaited(_gyroSub?.cancel());
     _gyroSub = null;
-    unawaited(ref.read(mqttServiceProvider).disconnect());
   }
 }
 
