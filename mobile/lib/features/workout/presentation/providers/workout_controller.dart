@@ -40,7 +40,9 @@ class WorkoutController extends Notifier<WorkoutSession?> {
     _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
       final s = state;
       if (s == null || s.isPaused || s.endedAt != null) return;
-      state = s.copyWith(durationSeconds: s.durationSeconds + 1);
+      final next = s.copyWith(durationSeconds: s.durationSeconds + 1);
+      state = next;
+      _publishTelemetry(next);
     });
 
     await _locSub?.cancel();
@@ -72,19 +74,19 @@ class WorkoutController extends Notifier<WorkoutSession?> {
     );
     final next = s.copyWith(points: [...s.points, point]);
     state = next;
-    _publishTelemetry(next, point);
+    _publishTelemetry(next, point: point);
   }
 
-  void _publishTelemetry(WorkoutSession s, WorkoutPoint point) {
+  void _publishTelemetry(WorkoutSession s, {WorkoutPoint? point}) {
     final accel = _lastAccel;
     final gyro = _lastGyro;
     ref.read(mqttServiceProvider).publishTelemetry({
-      't': point.t.toUtc().toIso8601String(),
+      't': (point?.t ?? DateTime.now()).toUtc().toIso8601String(),
       'type': s.type.name,
-      'lat': point.lat,
-      'lng': point.lng,
-      'altitude': point.altitude,
-      'speedMps': point.speedMps,
+      if (point != null) 'lat': point.lat,
+      if (point != null) 'lng': point.lng,
+      if (point != null) 'altitude': point.altitude,
+      'speedMps': point?.speedMps ?? s.currentSpeedMps,
       'distanceM': s.distanceMeters,
       'durationS': s.durationSeconds,
       'caloriesKcal': s.caloriesKcal,
