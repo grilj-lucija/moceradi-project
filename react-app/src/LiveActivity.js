@@ -61,7 +61,13 @@ function LiveDeviceCard({ device }) {
         <h3 className='section-title' style={{ margin: 0 }}>
           {TYPE_LABELS[t.type] || t.type || 'Aktivnost'}
         </h3>
-        <span className='live-badge'>● V ŽIVO</span>
+        {device.ended ? (
+          <span className='live-badge' style={{ color: '#8b949e' }}>■ KONČANO</span>
+        ) : t.paused ? (
+          <span className='live-badge' style={{ color: '#f0a020' }}>❚❚ PAVZA</span>
+        ) : (
+          <span className='live-badge'>● V ŽIVO</span>
+        )}
       </div>
       <div className='profile-email' style={{ marginBottom: '12px', fontSize: '12px' }}>
         Naprava: {device.id.slice(0, 8)}
@@ -101,7 +107,7 @@ function LiveDeviceCard({ device }) {
 
 function LiveActivity({ session }) {
   const userId = session?.user?.id;
-  const { connected, activeDevices, activeCount } = useMqtt(userId);
+  const { connected, connectedCount, liveActivities } = useMqtt(userId);
 
   return (
     <div className='page-container'>
@@ -113,18 +119,18 @@ function LiveActivity({ session }) {
       </div>
 
       <div className='card' style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <div className='metric-value' style={{ fontSize: '32px' }}>{activeCount}</div>
+        <div className='metric-value' style={{ fontSize: '32px' }}>{connectedCount}</div>
         <div className='metric-label'>
-          {activeCount === 1 ? 'aktivna naprava' : 'aktivnih naprav'}
+          {connectedCount === 1 ? 'povezana naprava' : 'povezanih naprav'}
         </div>
       </div>
 
-      {activeDevices.length === 0 ? (
+      {liveActivities.length === 0 ? (
         <div className='card' style={{ padding: '40px', textAlign: 'center', color: '#8b949e' }}>
-          Trenutno ni aktivnih naprav. Začni aktivnost v mobilni aplikaciji.
+          Trenutno ni aktivnosti v teku. Začni aktivnost v mobilni aplikaciji.
         </div>
       ) : (
-        activeDevices.map((device) => <LiveDeviceCard key={device.id} device={device} />)
+        liveActivities.map((device) => <LiveDeviceCard key={device.id} device={device} />)
       )}
     </div>
   );

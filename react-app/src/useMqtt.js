@@ -2,12 +2,14 @@ import { useEffect, useRef, useState } from 'react';
 import mqtt from 'mqtt';
 
 const WS_URL = process.env.REACT_APP_MQTT_WS_URL || 'ws://localhost:9001';
-const STALE_MS = 30000;
+const PRESENCE_STALE_MS = 30000;
+const ACTIVITY_TTL_MS = 5000;
 const MAX_TRAIL = 5000;
 
 export function useMqtt(userId) {
   const [connected, setConnected] = useState(false);
   const [devices, setDevices] = useState({});
+  const [, setTick] = useState(0);
   const clientRef = useRef(null);
 
   useEffect(() => {
@@ -47,30 +49,46 @@ export function useMqtt(userId) {
       setDevices((prev) => {
         const cur = prev[deviceId] || { trail: [] };
         if (kind === 'telemetry') {
+          if (data.ended) {
+            return {
+              ...prev,
+              [deviceId]: {
+                ...cur,
+                telemetry: { ...cur.telemetry, ...data },
+                lastTelemetryAt: now,
+                ended: true,
+                presence: 'online',
+                presenceSeenAt: now,
+              },
+            };
+          }
+          const wasLive =
+            cur.lastTelemetryAt && now - cur.lastTelemetryAt < ACTIVITY_TTL_MS && !cur.ended;
+          const baseTrail = wasLive ? cur.trail : [];
           const trail =
             typeof data.lat === 'number' && typeof data.lng === 'number'
-              ? [...cur.trail, [data.lat, data.lng]].slice(-MAX_TRAIL)
-              : cur.trail;
+              ? [...baseTrail, [data.lat, data.lng]].slice(-MAX_TRAIL)
+              : baseTrail;
           return {
             ...prev,
             [deviceId]: {
               ...cur,
               telemetry: data,
-              status: 'online',
-              lastSeen: now,
+              lastTelemetryAt: now,
+              ended: false,
+              presence: 'online',
+              presenceSeenAt: now,
               trail,
             },
           };
         }
-        const becameOnline = data.status === 'online' && cur.status !== 'online';
         return {
           ...prev,
           [deviceId]: {
             ...cur,
-            status: data.status,
+            presence: data.status,
             presenceTs: data.ts,
-            lastSeen: now,
-            trail: becameOnline ? [] : cur.trail,
+            presenceSeenAt: now,
           },
         };
       });
@@ -83,27 +101,24 @@ export function useMqtt(userId) {
   }, [userId]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setDevices((prev) => {
-        let changed = false;
-        const next = {};
-        const now = Date.now();
-        for (const [id, d] of Object.entries(prev)) {
-          if (d.status === 'online' && now - d.lastSeen > STALE_MS) {
-            next[id] = { ...d, status: 'stale' };
-            changed = true;
-          } else {
-            next[id] = d;
-          }
-        }
-        return changed ? next : prev;
-      });
-    }, 5000);
+    const interval = setInterval(() => setTick((t) => t + 1), 1000);
     return () => clearInterval(interval);
   }, []);
 
+  const now = Date.now();
   const deviceList = Object.entries(devices).map(([id, d]) => ({ id, ...d }));
-  const activeDevices = deviceList.filter((d) => d.status === 'online');
 
-  return { connected, devices: deviceList, activeDevices, activeCount: activeDevices.length };
+  const connectedDevices = deviceList.filter(
+    (d) => d.presence === 'online' && now - (d.presenceSeenAt || 0) < PRESENCE_STALE_MS,
+  );
+  const liveActivities = deviceList.filter(
+    (d) => d.lastTelemetryAt && now - d.lastTelemetryAt < ACTIVITY_TTL_MS,
+  );
+
+  return {
+    connected,
+    connectedDevices,
+    connectedCount: connectedDevices.length,
+    liveActivities,
+  };
 }
