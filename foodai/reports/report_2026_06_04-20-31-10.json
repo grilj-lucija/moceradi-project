@@ -1,0 +1,11 @@
+{
+  "train_time": 128.19752264022827,
+  "im_size": [
+    300,
+    300
+  ],
+  "workers": 2,
+  "batch_size": 16,
+  "sample_size": 300,
+  "epoch_number": 10
+}
