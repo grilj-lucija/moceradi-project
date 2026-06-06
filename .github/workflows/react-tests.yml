@@ -23,4 +23,7 @@ jobs:
 
       - name: Run tests
         working-directory: ./react-app
+        env:
+          REACT_APP_SUPABASE_URL: ${{ secrets.REACT_APP_SUPABASE_URL }}
+          REACT_APP_SUPABASE_KEY: ${{ secrets.REACT_APP_SUPABASE_KEY }}
         run: npm test -- --watchAll=false
