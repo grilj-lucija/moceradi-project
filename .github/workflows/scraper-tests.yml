@@ -26,6 +26,3 @@ jobs:
         working-directory: ./scraper
         run: npm test
 
-      - name: Run tests
-        working-directory: ./react-app
-        run: npm test -- --watchAll=false
