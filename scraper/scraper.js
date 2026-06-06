@@ -94,4 +94,8 @@ async function main() {
     console.log(`\nKoncano! Shranjeno: ${saved}, preskoceno: ${skipped}`);
 }
 
-main();
+if(require.main == module){
+    main();
+}
+
+module.exports = {cleanName, fetchFoods, scrapePage};
