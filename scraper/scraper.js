@@ -34,10 +34,11 @@ function sleep(ms){
 }
 
 function cleanName(name){
-    if(!name) return null;
-    const cleaned = name.trim();
-    if(cleaned.length < 2 || cleaned.length > 200) return null;
-    return cleaned;
+    // if(!name) return null;
+    // const cleaned = name.trim();
+    // if(cleaned.length < 2 || cleaned.length > 200) return null;
+    // return cleaned;
+    return null;
 }
 
 async function scrapePage(url, saved, skipped){
