@@ -1,8 +1,18 @@
 import { render, screen } from '@testing-library/react';
-import App from './App';
+import Auth from './Auth';
 
-test('renders learn react link', () => {
-  render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+test('prikaze prijavni obrazec', ()=> {
+  render(<Auth />);
+  expect(screen.getByPlaceholderText(/email/i)).toBeInTheDocument();
+  expect(screen.getByPlaceholderText(/geslo/i)).toBeInTheDocument();
+});
+
+test('prikaze gumb za prijavo', () => {
+  render(<Auth />);
+  expect(screen.getByText(/prijavi se/i)).toBeInTheDocument();
+});
+
+test('prikaze link za registracijo', () => {
+  render(<Auth />);
+  expect(screen.getByText(/registriraj se/i)).toBeInTheDocument();
 });
