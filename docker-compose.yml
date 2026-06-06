@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  react-app:
+    build:
+      context: ./react-app
+      args:
+        REACT_APP_SUPABASE_URL: ${REACT_APP_SUPABASE_URL}
+        REACT_APP_SUPABASE_KEY: ${REACT_APP_SUPABASE_KEY}
+    ports:
+      - "3000:80"
+  
+  scraper:
+    build: 
+      context: ./scraper
+    env_file:
+      - ./scraper/.env
