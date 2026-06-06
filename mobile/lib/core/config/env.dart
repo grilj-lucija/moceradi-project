@@ -6,6 +6,7 @@ class Env {
   static String get supabaseUrl => dotenv.env['SUPABASE_URL'] ?? '';
   static String get supabaseAnonKey => dotenv.env['SUPABASE_ANON_KEY'] ?? '';
   static String get ocrBaseUrl => dotenv.env['OCR_BASE_URL'] ?? '';
+  static String get foodAiBaseUrl => dotenv.env['FOODAI_BASE_URL'] ?? '';
   static String get mapboxPublicToken =>
       dotenv.env['MAPBOX_PUBLIC_TOKEN'] ?? '';
 
@@ -18,6 +19,8 @@ class Env {
 
   static bool get isSupabaseConfigured =>
       supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty;
+
+  static bool get isFoodAiConfigured => foodAiBaseUrl.isNotEmpty;
 
   static bool get isMqttConfigured => mqttHost.isNotEmpty;
 }
