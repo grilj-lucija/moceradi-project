@@ -3,6 +3,7 @@ import 'package:health_app/core/config/env.dart';
 import 'package:health_app/core/mqtt/mqtt_service.dart';
 import 'package:health_app/data/repositories/activities_repository_impl.dart';
 import 'package:health_app/data/repositories/auth_repository_impl.dart';
+import 'package:health_app/data/repositories/food_recognition_repository_impl.dart';
 import 'package:health_app/data/repositories/foods_repository_impl.dart';
 import 'package:health_app/data/repositories/nutrition_log_repository_impl.dart';
 import 'package:health_app/data/repositories/profile_repository_impl.dart';
@@ -14,6 +15,9 @@ import 'package:health_app/data/sources/activities/supabase_activities_source.da
 import 'package:health_app/data/sources/auth/auth_source.dart';
 import 'package:health_app/data/sources/auth/mock_auth_source.dart';
 import 'package:health_app/data/sources/auth/supabase_auth_source.dart';
+import 'package:health_app/data/sources/food_recognition/food_recognition_source.dart';
+import 'package:health_app/data/sources/food_recognition/http_food_recognition_source.dart';
+import 'package:health_app/data/sources/food_recognition/mock_food_recognition_source.dart';
 import 'package:health_app/data/sources/foods/composite_foods_source.dart';
 import 'package:health_app/data/sources/foods/foods_source.dart';
 import 'package:health_app/data/sources/foods/local_foods_source.dart';
@@ -35,6 +39,7 @@ import 'package:health_app/data/sources/weights/supabase_weight_source.dart';
 import 'package:health_app/data/sources/weights/weight_source.dart';
 import 'package:health_app/domain/repositories/activities_repository.dart';
 import 'package:health_app/domain/repositories/auth_repository.dart';
+import 'package:health_app/domain/repositories/food_recognition_repository.dart';
 import 'package:health_app/domain/repositories/foods_repository.dart';
 import 'package:health_app/domain/repositories/nutrition_log_repository.dart';
 import 'package:health_app/domain/repositories/profile_repository.dart';
@@ -130,6 +135,20 @@ final nutritionLogSourceProvider = Provider<NutritionLogSource>((ref) {
 
 final foodsRepositoryProvider = Provider<FoodsRepository>((ref) {
   return FoodsRepositoryImpl(ref.watch(foodsSourceProvider));
+});
+
+final foodRecognitionSourceProvider = Provider<FoodRecognitionSource>((ref) {
+  if (Env.useMockData || !Env.isFoodAiConfigured) {
+    return MockFoodRecognitionSource();
+  }
+  return HttpFoodRecognitionSource();
+});
+
+final foodRecognitionRepositoryProvider =
+    Provider<FoodRecognitionRepository>((ref) {
+  return FoodRecognitionRepositoryImpl(
+    ref.watch(foodRecognitionSourceProvider),
+  );
 });
 
 final nutritionLogRepositoryProvider = Provider<NutritionLogRepository>((ref) {

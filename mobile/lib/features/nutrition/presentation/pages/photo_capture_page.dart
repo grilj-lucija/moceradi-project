@@ -5,9 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:health_app/app/router.dart';
 import 'package:health_app/app/theme/app_theme.dart';
-import 'package:health_app/data/models/food.dart';
-import 'package:health_app/data/models/nutrition_facts.dart';
+import 'package:health_app/di/providers.dart';
 import 'package:health_app/shared/widgets/buttons/ghost_button.dart';
+import 'package:health_app/shared/widgets/buttons/primary_button.dart';
 import 'package:image_picker/image_picker.dart';
 
 class PhotoCapturePage extends ConsumerStatefulWidget {
@@ -23,55 +23,70 @@ class _PhotoCapturePageState extends ConsumerState<PhotoCapturePage> {
   bool _analyzing = false;
   bool _launched = false;
 
-  static const _hardcodedResult = Food(
-    id: 'photo-ai:grilled-chicken-bowl',
-    name: 'Grilled chicken bowl',
-    source: FoodSourceKind.custom,
-    defaultServingGrams: 350,
-    facts: NutritionFacts(
-      kcalPer100g: 154,
-      proteinPer100g: 11,
-      carbsPer100g: 13,
-      fatPer100g: 5,
-    ),
-  );
-
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _capture());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _pick(ImageSource.camera));
   }
 
-  Future<void> _capture() async {
-    if (_launched) return;
-    _launched = true;
+  Future<void> _pick(ImageSource source) async {
+    if (_analyzing) return;
+    if (source == ImageSource.camera) _launched = true;
     try {
       final file = await _picker.pickImage(
-        source: ImageSource.camera,
+        source: source,
         imageQuality: 70,
       );
-      if (!mounted) return;
-      if (file == null) {
-        context.pop();
-        return;
-      }
+      if (!mounted || file == null) return;
       setState(() {
         _captured = file;
         _analyzing = true;
       });
-      await Future<void>.delayed(const Duration(milliseconds: 1500));
-      if (!mounted) return;
-      context.pushReplacement(
-        AppRoutes.nutritionEntry,
-        extra: _hardcodedResult,
-      );
+      await _analyze(file);
     } on Object catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Camera unavailable: $e')),
-      );
-      context.pop();
+      setState(() => _analyzing = false);
+      _showError('Could not open image source: $e');
     }
+  }
+
+  Future<void> _analyze(XFile file) async {
+    final bytes = await file.readAsBytes();
+    final result = await ref.read(foodRecognitionRepositoryProvider).recognize(
+          bytes: bytes,
+          filename: file.name,
+        );
+    if (!mounted) return;
+
+    result.fold(
+      ok: (recognition) {
+        final percent = (recognition.confidence * 100).round();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Detected ${recognition.food.name} ($percent%)',
+            ),
+          ),
+        );
+        context.pushReplacement(
+          AppRoutes.nutritionEntry,
+          extra: recognition.food,
+        );
+      },
+      err: (failure) {
+        setState(() {
+          _analyzing = false;
+          _captured = null;
+        });
+        _showError(failure.message);
+      },
+    );
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   @override
@@ -116,9 +131,7 @@ class _PhotoCapturePageState extends ConsumerState<PhotoCapturePage> {
                       SizedBox(height: spacing.stackLg),
                       Text(
                         'Analyzing your meal…',
-                        style: typography.titleMd.copyWith(
-                          color: Colors.white,
-                        ),
+                        style: typography.titleMd.copyWith(color: Colors.white),
                       ),
                       SizedBox(height: spacing.stackSm),
                       Text(
@@ -142,10 +155,21 @@ class _PhotoCapturePageState extends ConsumerState<PhotoCapturePage> {
                 top: false,
                 child: Padding(
                   padding: EdgeInsets.all(spacing.stackLg),
-                  child: GhostButton(
-                    label: 'Retake photo',
-                    icon: Icons.camera_alt_outlined,
-                    onPressed: _capture,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      PrimaryButton(
+                        label: _launched ? 'Retake photo' : 'Take photo',
+                        icon: Icons.camera_alt_outlined,
+                        onPressed: () => _pick(ImageSource.camera),
+                      ),
+                      SizedBox(height: spacing.stackMd),
+                      GhostButton(
+                        label: 'Choose from gallery',
+                        icon: Icons.photo_library_outlined,
+                        onPressed: () => _pick(ImageSource.gallery),
+                      ),
+                    ],
                   ),
                 ),
               ),
