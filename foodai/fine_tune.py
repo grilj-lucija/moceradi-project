@@ -286,9 +286,6 @@ def main():
 
     train_samples = get_training_samples()
 
-    #TODO remove after testing !!!!
-    train_samples = train_samples[:100]
-
     print("Start training")
     model = timm.create_model(args["model_name"], pretrained=True)
     model.classifier = nn.Linear(model.classifier.in_features, len(food_classes.CLASS_NAMES))
@@ -304,8 +301,6 @@ def main():
     print("Training time: ", train_time)
     save_report(train_time, train_samples, training_timestamp, args)
     save_model(training_timestamp, model, args)
-
-    print("Start testing")
 
 
 if __name__ == '__main__':
