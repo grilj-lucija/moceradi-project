@@ -1,48 +1,66 @@
-# MQTT Broker (Mosquitto)
+# MQTT posrednik (Mosquitto)
 
-Self-hosted [Eclipse Mosquitto](https://mosquitto.org/) broker that relays live
-workout telemetry from the mobile app (publisher) to the web app (subscriber).
+Lasten [Eclipse Mosquitto](https://mosquitto.org/) posrednik, ki v realnem času
+prenaša telemetrijo vadbe od mobilne aplikacije (objavlja) do spletne aplikacije
+(naroča). Tako lahko na spletu spremljate aktivnost, ki poteka na telefonu, v živo.
 
-## Listeners
+## Zahteve
 
-| Port | Protocol   | Used by                         |
-| ---- | ---------- | ------------------------------- |
-| 1883 | MQTT (TCP) | Flutter mobile app (publisher)  |
-| 9001 | WebSockets | React web app via mqtt.js (sub) |
+- [Docker](https://www.docker.com)
 
-Browsers cannot speak raw MQTT over TCP, so the web client connects to the
-WebSockets listener on `9001`.
+## Vrata (porti)
 
-## Run
+| Vrata | Protokol   | Uporablja                          |
+| ----- | ---------- | ---------------------------------- |
+| 1883  | MQTT (TCP) | mobilna aplikacija (objavlja)      |
+| 9001  | WebSockets | spletna aplikacija (naroča)        |
+
+Brskalniki ne znajo govoriti surovega MQTT preko TCP, zato se spletna aplikacija
+poveže na WebSockets vrata `9001`.
+
+## Namestitev
 
 ```bash
 cd mqtt-broker
 docker compose up -d
 ```
 
-Stop:
+Posrednik teče v ozadju. Ustavitev:
 
 ```bash
 docker compose down
 ```
 
-View logs:
+## Primeri uporabe
+
+### Primer 1: Pregled dnevnika (ali servis deluje)
 
 ```bash
 docker compose logs -f
 ```
 
-## Topics
+V dnevniku vidite povezave odjemalcev in promet sporočil.
 
-| Topic                                   | Payload                                     | Notes                       |
-| --------------------------------------- | ------------------------------------------- | --------------------------- |
-| `health/telemetry/<userId>/<deviceId>`  | live sensor JSON (GPS, speed, distance, ...) | published while recording   |
-| `health/presence/<userId>/<deviceId>`   | `{ "status": "online" \| "offline", ... }`   | retained, with Last Will    |
+### Primer 2: Ročni test naročanja na telemetrijo
 
-Per-user separation is done by topic: the web app subscribes only to
-`health/telemetry/<myUserId>/#` and `health/presence/<myUserId>/#`.
+Z nameščenim `mosquitto_clients` se lahko naročite na vse teme in opazujete
+sporočila, ki jih pošilja mobilna aplikacija:
 
-## Auth
+```bash
+mosquitto_sub -h localhost -p 1883 -t "health/#" -v
+```
 
-Anonymous access is enabled for local development (`allow_anonymous true`). When
-hosting publicly, add a password file and TLS, and set `allow_anonymous false`.
+## Teme (topics)
+
+| Tema                                   | Vsebina                                | Opomba                    |
+| -------------------------------------- | -------------------------------------- | ------------------------- |
+| `health/telemetry/<userId>/<deviceId>` | senzorski JSON (GPS, hitrost, razdalja)| med snemanjem aktivnosti  |
+| `health/presence/<userId>/<deviceId>`  | `{ "status": "online"/"offline" }`     | zadržano, z Last Will     |
+
+Ločevanje med uporabniki poteka preko tem: spletna aplikacija se naroči samo na
+`health/telemetry/<svojUserId>/#`.
+
+## Avtentikacija
+
+Za lokalni razvoj je vklopljen anonimni dostop (`allow_anonymous true`). Za javno
+gostovanje dodajte datoteko z gesli in TLS ter nastavite `allow_anonymous false`.

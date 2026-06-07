@@ -1,51 +1,84 @@
-# Health App — Mobile (Flutter)
+# Mobilna aplikacija (Flutter)
 
-Flutter app for iOS + Android. Part of the [Health App monorepo](../README.md).
+Mobilna aplikacija za Android in iOS. Omogoča prijavo, beleženje aktivnosti v živo
+(GPS sledenje), pregled prehrane in fotografiranje hrane za samodejno prepoznavanje
+preko storitve FoodAI. Med aktivnostjo pošilja telemetrijo na MQTT posrednik.
 
-## Quickstart
+## Zahteve
 
-```bash
-flutter pub get
-cp .env.example .env       # already exists; fill in Supabase keys when ready
-flutter run                # picks first available device
-```
+- [Flutter](https://docs.flutter.dev/get-started/install) 3.x (vključuje Dart 3.x)
+- Android Studio ali Xcode (za emulator/simulator), ali fizična naprava
+- Delujoči ostali servisi (Supabase, FoodAI, MQTT) za poln način delovanja
 
-Mock credentials (when `USE_MOCK_DATA=true`):
-
-```text
-email:    demo@health.app
-password: demo1234
-```
-
-## Architecture
-
-Layered, with a swappable data layer.
-
-```
-lib/
-├── app/              MaterialApp, router, theme tokens
-├── core/             Result<T>, Failure, env config
-├── data/             models, sources (abstract + mock + supabase), repositories
-├── domain/           abstract repository contracts
-├── features/         auth, dashboard, activities, profile
-├── shared/widgets/   reusable design-system widgets
-└── di/providers.dart single place to wire repos/sources
-```
-
-Switching from mock to Supabase is a single env flag (`USE_MOCK_DATA=false` + Supabase keys). No UI code changes.
-
-Architecture & conventions for AI agents: [`../.cursor/rules/mobile-architecture.mdc`](../.cursor/rules/mobile-architecture.mdc). Visual spec: [`../DESIGN.md`](../DESIGN.md).
-
-## Common commands
+Preverite namestitev:
 
 ```bash
-flutter analyze
-flutter test
-flutter run -d "iPhone 15"
-flutter run -d emulator-5554
+flutter doctor
 flutter devices
 ```
 
-## Stack
+## Namestitev
 
-Flutter 3.x · Dart 3.x · Riverpod 3 · go_router · Supabase Flutter · google_fonts (Plus Jakarta Sans) · equatable · very_good_analysis.
+```bash
+cd mobile
+flutter pub get
+cp .env.example .env
+```
+
+Odprite `.env` in nastavite spremenljivke. Za hiter preizkus brez backenda
+pustite `USE_MOCK_DATA=true` (aplikacija uporabi vzorčne podatke).
+
+```
+USE_MOCK_DATA=true
+SUPABASE_URL=vas_supabase_url
+SUPABASE_ANON_KEY=vas_anon_key
+FOODAI_BASE_URL=http://<IP-racunalnika>:8000
+MQTT_HOST=<IP-racunalnika>
+MQTT_PORT=1883
+```
+
+Za povezavo na lokalne servise lahko iz korenske mape uporabite pomožno skripto,
+ki samodejno zazna IP in nastavi `.env`:
+
+```bash
+./run-mobile.sh
+```
+
+## Primeri uporabe
+
+### Primer 1: Zagon na napravi/emulatorju
+
+```bash
+flutter run
+```
+
+Če imate več naprav, izberite določeno:
+
+```bash
+flutter devices
+flutter run -d "iPhone 15"
+flutter run -d emulator-5554
+```
+
+V demo načinu (`USE_MOCK_DATA=true`) se prijavite z:
+
+```
+email:    demo@health.app
+geslo:    demo1234
+```
+
+### Primer 2: Beleženje aktivnosti v živo
+
+1. Prijavite se v aplikacijo
+2. Začnite novo aktivnost (npr. tek)
+3. Aplikacija med snemanjem pošilja lokacijo in hitrost na MQTT posrednik
+4. Na spletni aplikaciji lahko hkrati spremljate aktivnost v realnem času
+5. Po koncu se aktivnost shrani v Supabase in je vidna v zgodovini
+
+## Pogosti ukazi
+
+```bash
+flutter analyze     # statična analiza kode
+flutter test        # zagon testov
+flutter build apk   # gradnja Android APK
+```
