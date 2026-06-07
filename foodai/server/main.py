@@ -40,6 +40,14 @@ def _calories(label):
     return entry.get("cal_100g")
 
 
+def _center_square_crop(image: Image.Image) -> Image.Image:
+    width, height = image.size
+    side = min(width, height)
+    left = (width - side) // 2
+    top = (height - side) // 2
+    return image.crop((left, top, left + side, top + side))
+
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
@@ -56,6 +64,7 @@ async def recognize(file: UploadFile = File(...)):
     except UnidentifiedImageError:
         raise HTTPException(status_code=400, detail="Invalid image file")
 
+    image = _center_square_crop(image)
     tensor = _transform(image).unsqueeze(0).to(DEVICE)
 
     with torch.no_grad():
