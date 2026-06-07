@@ -1,0 +1,10 @@
+.venv
+datasources
+checkpoints
+reports
+**/__pycache__
+**/*.pyc
+.env
+fine_tune.py
+requirements.txt
+.git
