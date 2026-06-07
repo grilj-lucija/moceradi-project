@@ -4,14 +4,25 @@
 Hrani uporabnike, aktivnosti, dnevnik prehrane in katalog živil. Uporabljata jo
 spletna in mobilna aplikacija, scraper pa vanjo polni živila.
 
-Mapa vsebuje `config.toml` z nastavitvami za lokalni Supabase (preko Supabase CLI).
+Mapa vsebuje:
+
+- `config.toml` – nastavitve za lokalni Supabase (preko Supabase CLI)
+- `schema.sql` – izvoz celotne podatkovne sheme (tabele, funkcije, sprožilci)
 
 ## Podatkovni model
 
-- **users** – uporabniki
-- **activity** – zabeležene aktivnosti z lokacijskimi podatki
-- **nutrition_log** – dnevnik prehrane
+Glavne tabele v shemi `public`:
+
+- **profiles** – profili uporabnikov
+- **user_goals**, **user_weights**, **daily_nutrition_goals** – cilji in meritve uporabnika
+- **activities**, **activity_streams** – zabeležene aktivnosti in njihovi podatkovni tokovi
+- **walk**, **walk_node** – sprehodi z lokacijskimi točkami
+- **food_entries** – dnevnik prehrane
 - **ingredient** – katalog živil (polni ga scraper)
+- **custom_foods**, **generic_foods**, **popular_foods**, **recent_foods** – viri in predlogi živil
+- **recipes**, **recipe_ingredients** – recepti
+
+> Celotna shema (vključno z `auth`, `storage` in `realtime`) je v `schema.sql`.
 
 ## Možnost A: Obstoječi (gostovani) projekt
 
@@ -37,6 +48,12 @@ supabase start
 
 Po zagonu CLI izpiše lokalne URL-je in ključe (API na `http://localhost:54321`,
 Studio na `http://localhost:54323`).
+
+Uvoz sheme v lokalno bazo:
+
+```bash
+psql "postgresql://postgres:postgres@localhost:54322/postgres" -f schema.sql
+```
 
 Ustavitev:
 
