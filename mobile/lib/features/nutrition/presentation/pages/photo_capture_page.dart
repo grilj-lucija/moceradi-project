@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:io';
 
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -17,24 +19,96 @@ class PhotoCapturePage extends ConsumerStatefulWidget {
   ConsumerState<PhotoCapturePage> createState() => _PhotoCapturePageState();
 }
 
-class _PhotoCapturePageState extends ConsumerState<PhotoCapturePage> {
+class _PhotoCapturePageState extends ConsumerState<PhotoCapturePage>
+    with WidgetsBindingObserver {
   final ImagePicker _picker = ImagePicker();
+  CameraController? _controller;
+  String? _cameraError;
   XFile? _captured;
   bool _analyzing = false;
-  bool _launched = false;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _pick(ImageSource.camera));
+    WidgetsBinding.instance.addObserver(this);
+    unawaited(_initCamera());
   }
 
-  Future<void> _pick(ImageSource source) async {
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    unawaited(_controller?.dispose());
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    final controller = _controller;
+    if (controller == null || !controller.value.isInitialized) return;
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused) {
+      unawaited(controller.dispose());
+      _controller = null;
+    } else if (state == AppLifecycleState.resumed && _captured == null) {
+      unawaited(_initCamera());
+    }
+  }
+
+  Future<void> _initCamera() async {
+    try {
+      final cameras = await availableCameras();
+      if (cameras.isEmpty) {
+        if (mounted) setState(() => _cameraError = 'No camera available');
+        return;
+      }
+      final back = cameras.firstWhere(
+        (c) => c.lensDirection == CameraLensDirection.back,
+        orElse: () => cameras.first,
+      );
+      final controller = CameraController(
+        back,
+        ResolutionPreset.high,
+        enableAudio: false,
+      );
+      await controller.initialize();
+      if (!mounted) {
+        unawaited(controller.dispose());
+        return;
+      }
+      setState(() {
+        _controller = controller;
+        _cameraError = null;
+      });
+    } on Object catch (e) {
+      if (mounted) setState(() => _cameraError = 'Could not open camera: $e');
+    }
+  }
+
+  Future<void> _takePhoto() async {
+    final controller = _controller;
+    if (_analyzing || controller == null || !controller.value.isInitialized) {
+      return;
+    }
+    try {
+      final file = await controller.takePicture();
+      if (!mounted) return;
+      setState(() {
+        _captured = file;
+        _analyzing = true;
+      });
+      await _analyze(file);
+    } on Object catch (e) {
+      if (!mounted) return;
+      setState(() => _analyzing = false);
+      _showError('Could not capture photo: $e');
+    }
+  }
+
+  Future<void> _pickFromGallery() async {
     if (_analyzing) return;
-    if (source == ImageSource.camera) _launched = true;
     try {
       final file = await _picker.pickImage(
-        source: source,
+        source: ImageSource.gallery,
         imageQuality: 70,
       );
       if (!mounted || file == null) return;
@@ -46,7 +120,17 @@ class _PhotoCapturePageState extends ConsumerState<PhotoCapturePage> {
     } on Object catch (e) {
       if (!mounted) return;
       setState(() => _analyzing = false);
-      _showError('Could not open image source: $e');
+      _showError('Could not open gallery: $e');
+    }
+  }
+
+  Future<void> _retake() async {
+    setState(() {
+      _captured = null;
+      _analyzing = false;
+    });
+    if (_controller == null) {
+      unawaited(_initCamera());
     }
   }
 
@@ -95,6 +179,7 @@ class _PhotoCapturePageState extends ConsumerState<PhotoCapturePage> {
     final typography = context.typography;
     final spacing = context.spacing;
     final captured = _captured;
+    final controller = _controller;
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -110,8 +195,22 @@ class _PhotoCapturePageState extends ConsumerState<PhotoCapturePage> {
         children: [
           if (captured != null)
             Image.file(File(captured.path), fit: BoxFit.cover)
+          else if (controller != null && controller.value.isInitialized)
+            _CameraPreviewCover(controller: controller)
           else
-            const ColoredBox(color: Colors.black),
+            Center(
+              child: _cameraError != null
+                  ? Padding(
+                      padding: EdgeInsets.all(spacing.stackLg),
+                      child: Text(
+                        _cameraError!,
+                        style:
+                            typography.bodyMd.copyWith(color: Colors.white),
+                        textAlign: TextAlign.center,
+                      ),
+                    )
+                  : CircularProgressIndicator(color: colors.enduranceCyan),
+            ),
           if (_analyzing)
             ColoredBox(
               color: Colors.black.withValues(alpha: 0.55),
@@ -159,15 +258,15 @@ class _PhotoCapturePageState extends ConsumerState<PhotoCapturePage> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       PrimaryButton(
-                        label: _launched ? 'Retake photo' : 'Take photo',
+                        label: captured != null ? 'Retake photo' : 'Take photo',
                         icon: Icons.camera_alt_outlined,
-                        onPressed: () => _pick(ImageSource.camera),
+                        onPressed: captured != null ? _retake : _takePhoto,
                       ),
                       SizedBox(height: spacing.stackMd),
                       GhostButton(
                         label: 'Choose from gallery',
                         icon: Icons.photo_library_outlined,
-                        onPressed: () => _pick(ImageSource.gallery),
+                        onPressed: _pickFromGallery,
                       ),
                     ],
                   ),
@@ -175,6 +274,28 @@ class _PhotoCapturePageState extends ConsumerState<PhotoCapturePage> {
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+class _CameraPreviewCover extends StatelessWidget {
+  const _CameraPreviewCover({required this.controller});
+
+  final CameraController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final size = controller.value.previewSize;
+    if (size == null) return CameraPreview(controller);
+    return ClipRect(
+      child: FittedBox(
+        fit: BoxFit.cover,
+        child: SizedBox(
+          width: size.height,
+          height: size.width,
+          child: CameraPreview(controller),
+        ),
       ),
     );
   }
