@@ -14,12 +14,17 @@ import timm
 import torch
 import torch.nn as nn
 import datasources.kaggle_fruit_360.get_files as kag_fruit_360
-from sklearn.model_selection import train_test_split
 
+# Default values
 IM_SIZE = (300, 300)
 NUM_WORKERS = 8
 BATCH_SIZE = 16
 EPOCH_NUMBER = 10
+MODEL_NAME = "efficientnet_b3"
+
+
+DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+
 
 class FoodDataset(Dataset):
     def __init__(self, samples, transform=None):
@@ -40,33 +45,7 @@ class FoodDataset(Dataset):
         return image, label
 
 
-train_tfms = transforms.Compose([
-    transforms.Resize(IM_SIZE),
-    transforms.RandomHorizontalFlip(),
-    transforms.RandomRotation(10),
-    transforms.ToTensor(),
-    transforms.Normalize([0.485, 0.456, 0.406],
-                         [0.229, 0.224, 0.225])
-])
-
-val_tfms = transforms.Compose([
-    transforms.Resize(IM_SIZE),
-    transforms.ToTensor(),
-    transforms.Normalize([0.485, 0.456, 0.406],
-                         [0.229, 0.224, 0.225])
-])
-
-model = timm.create_model('efficientnet_b3', pretrained=True)
-model.classifier = nn.Linear(model.classifier.in_features, len(food_classes.CLASS_NAMES))
-
-device = "cuda" if torch.cuda.is_available() else "cpu"
-model.to(device)
-
-criterion = nn.CrossEntropyLoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
-
-
-def save_checkpoint(epoch, loss, start_date):
+def save_checkpoint(epoch, loss, start_date, model, optimizer):
     checkpoints_dir = Path(f"./checkpoints")
     checkpoints_dir.mkdir(exist_ok=True)
 
@@ -87,8 +66,8 @@ def save_checkpoint(epoch, loss, start_date):
     print(f"Checkpoint saved: {checkpoint_path}")
 
 
-def load_checkpoint(path):
-    checkpoint = torch.load(path, map_location=device)
+def load_checkpoint(path, model, optimizer):
+    checkpoint = torch.load(path, map_location=DEVICE)
 
     model.load_state_dict(checkpoint["model_state_dict"])
     optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
@@ -96,7 +75,7 @@ def load_checkpoint(path):
     return checkpoint["epoch"] + 1
 
 
-def load_checkpoint_if_exists(timestamp):
+def load_checkpoint_if_exists(timestamp, model, optimizer):
     checkpoints_dir = Path(f"./checkpoints/{timestamp}")
     if not os.path.isdir(checkpoints_dir):
         return 0
@@ -113,16 +92,16 @@ def load_checkpoint_if_exists(timestamp):
     if not latest_file:
         return 0
 
-    return load_checkpoint(latest_file)
+    return load_checkpoint(latest_file, model, optimizer)
 
 
-def train_one_epoch(loader):
+def train_one_epoch(loader, model, optimizer, criterion):
     model.train()
     total_loss = 0
 
     for x, y in loader:
-        x = x.to(device, non_blocking=True)
-        y = y.to(device, non_blocking=True)
+        x = x.to(DEVICE, non_blocking=True)
+        y = y.to(DEVICE, non_blocking=True)
 
         optimizer.zero_grad()
         out = model(x)
@@ -136,35 +115,34 @@ def train_one_epoch(loader):
     return total_loss / len(loader)
 
 
-def run_training(samples, timestamp):
+def run_training(samples, timestamp, model, optimizer, criterion, args):
+    train_tfms = transforms.Compose([
+        transforms.Resize(args["im_size"]),
+        transforms.RandomHorizontalFlip(),
+        transforms.RandomRotation(10),
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406],
+                             [0.229, 0.224, 0.225])
+    ])
+
     dataset = FoodDataset(samples, transform=train_tfms)
-    loader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS, pin_memory=True, persistent_workers=False)
-    start_epoch = load_checkpoint_if_exists(timestamp)
+    loader = DataLoader(dataset, batch_size=args["batch_size"], shuffle=True, num_workers=args["workers"], pin_memory=True, persistent_workers=False)
+    start_epoch = load_checkpoint_if_exists(timestamp, model, optimizer)
 
-    for epoch in range(start_epoch, EPOCH_NUMBER):
-        loss = train_one_epoch(loader)
+    for epoch in range(start_epoch, args["epoch_number"]):
+        loss = train_one_epoch(loader, model, optimizer, criterion)
         print(f"Epoch {epoch}: {loss:.4f}")
-        save_checkpoint(epoch, loss, timestamp)
+        save_checkpoint(epoch, loss, timestamp, model, optimizer)
 
 
-def predict(image):
-    image = val_tfms(image).unsqueeze(0).to(device)
-
-    with torch.no_grad():
-        logits = model(image)
-        probs = nn.functional.softmax(logits, dim=1)
-
-    idx = probs.argmax().item()
-    return food_classes.IDX_TO_CLASS[idx], probs.max().item()
-
-def save_report(train_time, train_samples, timestamp):
+def save_report(train_time, train_samples, timestamp, args):
     training_report = {
         "train_time": train_time,
-        "im_size": IM_SIZE,
-        "workers": NUM_WORKERS,
-        "batch_size": BATCH_SIZE,
+        "im_size": args["im_size"],
+        "workers": args["workers"],
+        "batch_size": args["batch_size"],
         "sample_size": len(train_samples),
-        "epoch_number": EPOCH_NUMBER,
+        "epoch_number": args["epoch_number"],
     }
 
     reports_dir = Path("./reports")
@@ -177,7 +155,7 @@ def save_report(train_time, train_samples, timestamp):
 
     print(f"Report saved to {report_path}")
 
-def save_model(timestamp):
+def save_model(timestamp, model, args):
     models_dir = Path("./models")
     models_dir.mkdir(exist_ok=True)
 
@@ -187,71 +165,145 @@ def save_model(timestamp):
         "model_state_dict": model.state_dict(),
         "idx_to_class": food_classes.IDX_TO_CLASS,
         "class_to_idx": food_classes.CLASS_TO_IDX,
-        "image_size": IM_SIZE,
+        "image_size": args["im_size"],
     }, model_path)
 
     print(f"Model saved to {model_path}")
+
+def print_help():
+    print(
+"""
+Help:
+--continue-from YYYY_mm_dd-HH-MM-SS<,N>
+    Use to continue from checkpoint. N is optional epoch number
+
+--image-size XxY
+    Size of images for training in pixels
+
+--workers N
+    Number of training workers
+
+--batch-size N
+    Size of training batches
+
+--epoch-number N
+    Number of training epochs
+
+--model-name <string>
+    Name of model to fine-tune
+""")
+
+def is_nan(num):
+    return num != num
+
+def str_to_imsize(im_size_str):
+    im_size_px = im_size_str.split("x")
+    x = int(im_size_px[0])
+    y = int(im_size_px[1])
+    if is_nan(x) or is_nan(y):
+        return None
+    return x, y
 
 def get_arg_idx(argv, arg_name):
     try:
         return argv.index(arg_name)
     except ValueError:
-        return 0
+        return None
 
-
-# returns True + args obj if args present and False otherwise
 def get_args():
     argc = len(sys.argv)
     if len(sys.argv) <= 1:
-        return False, {}
+        return {}
     argv = sys.argv
-    help = get_arg_idx(argv, "--help")
-    if help > 0:
-        print(
-"""
-Help:
-To continue use --continue-from YYYY_mm_dd-HH-MM-SS
-Or just start training a new model with default parameters
-""")
+    args = {}
+
+    if get_arg_idx(argv, "--help") is not None:
+        print_help()
         exit(0)
-    contine_from = get_arg_idx(argv, "--continue-from")
-    if contine_from == -1:
-        return False, {}
-    if argc < contine_from + 1:
-        print("--continue-from found but nothing specified")
-        return False, {}
-    return True, {"continue_from": argv[contine_from + 1]}
+
+    arg_idx = get_arg_idx(argv, "--continue-from")
+    if arg_idx is not None and argc >= arg_idx + 1:
+        args["continue_from"] = argv[arg_idx + 1]
+
+    arg_idx = get_arg_idx(argv, "--image-size")
+    if arg_idx is not None and argc >= arg_idx + 1:
+        im_size = str_to_imsize(argv[arg_idx + 1])
+        if im_size is not None:
+            args["im_size"] = im_size
+
+    arg_idx = get_arg_idx(argv, "--workers")
+    if arg_idx is not None and argc >= arg_idx + 1:
+        workers = int(argv[arg_idx + 1])
+        if not is_nan(workers):
+            args["workers"] = workers
+
+    arg_idx = get_arg_idx(argv, "--batch-size")
+    if arg_idx is not None and argc >= arg_idx + 1:
+        batch_size = int(argv[arg_idx + 1])
+        if not is_nan(batch_size):
+            args["batch_size"] = batch_size
+
+    arg_idx = get_arg_idx(argv, "--epoch-number")
+    if arg_idx is not None and argc >= arg_idx + 1:
+        epoch_number = int(argv[arg_idx + 1])
+        if not is_nan(epoch_number):
+            args["epoch_number"] = epoch_number
+
+    arg_idx = get_arg_idx(argv, "--model-name")
+    if arg_idx is not None and argc >= arg_idx + 1:
+        args["model_name"] = argv[arg_idx + 1]
+
+    return args
+
+def get_training_samples():
+    return kag_fruit_360.get_training_files("./datasources/kaggle_fruit_360/fruits-360_original-size/fruits-360-original-size/Training")
 
 def main():
     print("Start")
-    have_args, args = get_args()
-    if have_args:
+
+    args = get_args()
+
+    if "continue_from" in args:
         print("Continuing from ", args["continue_from"])
         training_timestamp = args["continue_from"]
     else:
         training_timestamp = datetime.now().strftime("%Y_%m_%d-%H-%M-%S")
 
-    #TODO make separate get_testing_files()
-    #train_samples = kag_fruit_360.get_training_files()
-    samples = kag_fruit_360.get_training_files("./datasources/kaggle_fruit_360/fruits-360_original-size/fruits-360-original-size/Training")
+    if "im_size" not in args:
+        args["im_size"] = IM_SIZE
 
-    train_samples, val_samples = train_test_split(
-        samples,
-        test_size=0.2,
-        random_state=42,
-        shuffle=True
-    )
+    if "workers" not in args:
+        args["workers"] = NUM_WORKERS
+
+    if "batch_size" not in args:
+        args["batch_size"] = BATCH_SIZE
+
+    if "epoch_number" not in args:
+        args["epoch_number"] = EPOCH_NUMBER
+
+    if "model_name" not in args:
+        args["model_name"] = MODEL_NAME
+
+    train_samples = get_training_samples()
 
     #TODO remove after testing !!!!
-    #train_samples = train_samples[:100]
+    train_samples = train_samples[:100]
 
     print("Start training")
+    model = timm.create_model(args["model_name"], pretrained=True)
+    model.classifier = nn.Linear(model.classifier.in_features, len(food_classes.CLASS_NAMES))
+
+    model.to(DEVICE)
+
+    criterion = nn.CrossEntropyLoss()
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
+
     train_start_time = time.time()
-    run_training(train_samples, training_timestamp)
+    run_training(train_samples, training_timestamp, model, optimizer, criterion, args)
     train_time = time.time() - train_start_time
     print("Training time: ", train_time)
-    save_report(train_time, train_samples, training_timestamp)
-    save_model(training_timestamp)
+    save_report(train_time, train_samples, training_timestamp, args)
+    save_model(training_timestamp, model, args)
 
     print("Start testing")
 

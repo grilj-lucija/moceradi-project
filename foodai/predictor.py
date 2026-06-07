@@ -35,7 +35,12 @@ def get_transform(image_size):
     ])
 
 def predict(image_path, model, transform, idx_to_class):
-    image = Image.open(image_path).convert("RGB")
+    try:
+        image = Image.open(image_path)
+    except:
+        print("Couldn't open image")
+        exit(1)
+    image = image.convert("RGB")
     image = transform(image).unsqueeze(0).to(DEVICE)
 
     with torch.no_grad():
