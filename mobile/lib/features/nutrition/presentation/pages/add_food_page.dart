@@ -8,7 +8,6 @@ class AddFoodPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.colors;
     final spacing = context.spacing;
 
     return Scaffold(
@@ -65,7 +64,6 @@ class _ActionCard extends StatelessWidget {
     required this.subtitle,
     required this.onTap,
     this.highlight = false,
-    this.compact = false,
   });
 
   final IconData icon;
@@ -73,7 +71,6 @@ class _ActionCard extends StatelessWidget {
   final String subtitle;
   final VoidCallback onTap;
   final bool highlight;
-  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -89,7 +86,7 @@ class _ActionCard extends StatelessWidget {
         onTap: onTap,
         borderRadius: radius.xlRadius,
         child: Ink(
-          padding: EdgeInsets.all(compact ? spacing.stackMd : spacing.stackLg),
+          padding: EdgeInsets.all(spacing.stackLg),
           decoration: BoxDecoration(
             color: highlight
                 ? colors.surfaceContainerHigh
@@ -112,8 +109,8 @@ class _ActionCard extends StatelessWidget {
           child: Row(
             children: [
               Container(
-                width: compact ? 44 : 56,
-                height: compact ? 44 : 56,
+                width: 56,
+                height: 56,
                 decoration: BoxDecoration(
                   color: colors.surfaceContainerHigh,
                   borderRadius: radius.lgRadius,
@@ -122,7 +119,7 @@ class _ActionCard extends StatelessWidget {
                 child: Icon(
                   icon,
                   color: colors.enduranceCyan,
-                  size: compact ? 22 : 28,
+                  size: 28,
                 ),
               ),
               SizedBox(width: spacing.stackMd),

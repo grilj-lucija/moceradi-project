@@ -19,6 +19,7 @@ linter:
     lines_longer_than_80_chars: false
     avoid_redundant_argument_values: false
     flutter_style_todos: false
+    one_member_abstracts: false
 
 custom_lint:
   rules:
