@@ -12,9 +12,9 @@ enum WorkoutStartError { permissionDenied }
 class WorkoutController extends Notifier<WorkoutSession?> {
   Timer? _ticker;
   StreamSubscription<Position>? _locSub;
-  StreamSubscription<AccelerometerEvent>? _accelSub;
+  StreamSubscription<UserAccelerometerEvent>? _accelSub;
   StreamSubscription<GyroscopeEvent>? _gyroSub;
-  AccelerometerEvent? _lastAccel;
+  UserAccelerometerEvent? _lastAccel;
   GyroscopeEvent? _lastGyro;
 
   static const double _defaultWeightKg = 70;
@@ -52,7 +52,7 @@ class WorkoutController extends Notifier<WorkoutSession?> {
     _locSub = location.stream().listen(_onPosition);
 
     await _accelSub?.cancel();
-    _accelSub = accelerometerEventStream().listen((e) => _lastAccel = e);
+    _accelSub = userAccelerometerEventStream().listen((e) => _lastAccel = e);
     await _gyroSub?.cancel();
     _gyroSub = gyroscopeEventStream().listen((e) => _lastGyro = e);
 
