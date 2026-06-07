@@ -1,0 +1,6 @@
+datasources
+checkpoints
+reports
+__pycache__
+*.pyc
+.env
