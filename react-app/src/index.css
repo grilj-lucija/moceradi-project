@@ -533,3 +533,33 @@ body{
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+.conn-pill {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+
+.conn-on {
+  background: rgba(46, 160, 67, 0.15);
+  color: #3fb950;
+}
+
+.conn-off {
+  background: rgba(248, 81, 73, 0.15);
+  color: #f85149;
+}
+
+.live-badge {
+  font-size: 12px;
+  font-weight: 700;
+  color: #f85149;
+  letter-spacing: 0.5px;
+  animation: live-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}

@@ -45,5 +45,11 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Pulse uses your location to record your workout route.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Used to scan barcodes and capture meal photos.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Used to attach meal photos for food logging.</string>
 </dict>
 </plist>
