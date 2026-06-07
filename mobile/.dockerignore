@@ -1,0 +1,14 @@
+build/
+.dart_tool/
+.idea/
+*.iml
+.git/
+.github/
+ios/
+macos/
+linux/
+windows/
+web/
+coverage/
+.env
+*.log
